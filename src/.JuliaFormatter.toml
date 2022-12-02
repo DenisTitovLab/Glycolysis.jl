@@ -1,0 +1,3 @@
+#No fields means use default options in JuliaFormatter.jl
+
+margin = 110
