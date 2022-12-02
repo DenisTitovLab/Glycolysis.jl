@@ -20,6 +20,6 @@ sol = solve(
 
 #Plot [ATP] over time
 lines(sol.t, [sol.u[i].ATP for i in 1:length(sol)], axis=(limits=((nothing),(0,10e-3)),))
-
-![image](https://user-images.githubusercontent.com/75404066/205253830-57abfa66-d48e-4025-98ad-d3f19980f197.png)
 ```
+![image](https://user-images.githubusercontent.com/75404066/205253830-57abfa66-d48e-4025-98ad-d3f19980f197.png)
+
