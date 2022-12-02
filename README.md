@@ -4,7 +4,7 @@ Package for modeling mammalian glycolysis activity
 
 You can use it to simulate glycolysis using the following code:
 ```julia
-using Glycolysis, DifferentialEquations, CairoMakie, Revise
+using Glycolysis, DifferentialEquations, CairoMakie
 
 # Set ATPase rate to be equal to 10% of glycolysis Vmax which is set by HK1 Vmax
 model_params.ATPase_Vmax = 0.1 * 2 * model_params.HK1_Vmax * model_params.HK1_Conc
