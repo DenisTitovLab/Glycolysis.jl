@@ -11,47 +11,30 @@ function rate_13C_HK1(Glucose_13C, G6P_13C, Glucose, G6P, ATP, Phosphate, ADP, p
     Z = (
         (
             1 +
-            Glucose / params.HK1_KmGlucose +
-            ATP / params.HK1_a_KmATP +
-            G6P / params.HK1_a_KmG6P +
-            ADP / params.HK1_a_KmADP +
-            G6P / params.HK1_a_KdG6P_cat +
-            (Glucose / params.HK1_KmGlucose) * (ATP / params.HK1_a_KmATP) +
-            (G6P / params.HK1_a_KmG6P) * (ADP / params.HK1_a_KmADP) +
-            (Glucose / params.HK1_KmGlucose) * (ADP / params.HK1_a_KmADP) +
-            (Glucose / params.HK1_KmGlucose) * (G6P / params.HK1_a_KdG6P_cat)
-        ) * (1 + G6P / params.HK1_a_KdG6P_allo + Phosphate / params.HK1_a_KdPi) +
-        params.HK1_L *
+            (Glucose / params.HK1_K_Glucose) +
+            (ATP / params.HK1_K_a_ATP) +
+            (G6P / params.HK1_K_G6P) +
+            (G6P / params.HK1_K_a_G6P_cat) +
+            (ADP / params.HK1_K_a_ADP) +
+            (params.HK1_β_Glucose_ATP) * (Glucose / params.HK1_K_Glucose) * (ATP / params.HK1_K_a_ATP) +
+            (Glucose / params.HK1_K_Glucose) * (ADP / params.HK1_K_a_ADP) +
+            (Glucose / params.HK1_K_Glucose) * (G6P / params.HK1_K_a_G6P_cat) +
+            (G6P / params.HK1_K_G6P) * (ADP / params.HK1_K_a_ADP) +
+            (G6P / params.HK1_K_G6P) * (G6P / params.HK1_K_a_G6P_cat)
+        ) * (1 + (Phosphate / params.HK1_K_a_Pi)) +
+        (1 + (Glucose / params.HK1_K_Glucose) + (G6P / params.HK1_K_G6P)) * (G6P / params.HK1_K_i_G6P_reg)
+    )
+    Rate =
         (
-            1 +
-            Glucose / params.HK1_KmGlucose +
-            ATP / params.HK1_i_KmATP +
-            G6P / params.HK1_i_KmG6P +
-            ADP / params.HK1_i_KmADP +
-            G6P / params.HK1_i_KdG6P_cat +
-            (Glucose / params.HK1_KmGlucose) * (ATP / params.HK1_i_KmATP) +
-            (G6P / params.HK1_i_KmG6P) * (ADP / params.HK1_i_KmADP) +
-            (Glucose / params.HK1_KmGlucose) * (ADP / params.HK1_i_KmADP) +
-            (Glucose / params.HK1_KmGlucose) * (G6P / params.HK1_i_KdG6P_cat)
-        ) *
-        (1 + G6P / params.HK1_i_KdG6P_allo + Phosphate / params.HK1_i_KdPi)
-    )
-    Pi = (
-        params.HK1_L *
-        (1 / params.HK1_KmGlucose) *
-        (1 / params.HK1_i_KmATP) *
-        (1 + G6P / params.HK1_i_KdG6P_allo + Phosphate / params.HK1_i_KdPi) / Z
-    )
-    Pa = (
-        (1 / params.HK1_KmGlucose) *
-        (1 / params.HK1_a_KmATP) *
-        (1 + G6P / params.HK1_a_KdG6P_allo + Phosphate / params.HK1_a_KdPi) / Z
-    )
-    Rate = (
-        (1 / params.HK1_n) *
-        (params.HK1_Vmax * params.HK1_Conc * Pa + params.HK1_Vmax * params.HK1_Conc * Pi) *
-        (Glucose_13C * ATP - G6P_13C * ADP / params.HK1_Keq)
-    )
+            (
+                params.HK1_Vmax *
+                params.HK1_Conc *
+                (params.HK1_β_Glucose_ATP) *
+                (1 / params.HK1_K_Glucose) *
+                (1 / params.HK1_K_a_ATP) *
+                (1 + (Phosphate / params.HK1_K_a_Pi))
+            ) * (Glucose_13C * ATP - G6P_13C * ADP / params.HK1_Keq)
+        ) / Z
     return Rate
 end
 
@@ -63,46 +46,42 @@ function rate_13C_GPI(G6P_13C, F6P_13C, G6P, F6P, params)
     return Rate
 end
 
-function rate_13C_PFKP(F6P_13C, F16BP_13C, F6P, ATP, ADP, Phosphate, F26BP, F16BP, params)
-    Z = (
-        ((1 + ATP / params.PFKP_a_KmATP + ADP / params.PFKP_KmADP)^params.PFKP_n) *
-        ((1 + F6P / params.PFKP_a_KmF6P + F16BP / params.PFKP_KmF16BP)^params.PFKP_n) *
-        ((1 + ATP / params.PFKP_a_KdATP + Phosphate / params.PFKP_a_KdPi)^params.PFKP_n) *
-        ((1 + ADP / params.PFKP_a_KdADP)^params.PFKP_n) *
-        ((1 + F26BP / params.PFKP_a_KdF26BP)^params.PFKP_n) +
-        params.PFKP_L *
-        ((1 + ATP / params.PFKP_i_KmATP + ADP / params.PFKP_KmADP)^params.PFKP_n) *
-        ((1 + F6P / params.PFKP_i_KmF6P + F16BP / params.PFKP_KmF16BP)^params.PFKP_n) *
-        ((1 + ATP / params.PFKP_i_KdATP + Phosphate / params.PFKP_i_KdPi)^params.PFKP_n) *
-        ((1 + ADP / params.PFKP_i_KdADP)^params.PFKP_n) *
-        ((1 + F26BP / params.PFKP_i_KdF26BP)^params.PFKP_n)
+function rate_13C_PFKP(F6P_13C, F16BP_13C, F6P, ATP, F16BP, ADP, Phosphate, Citrate, F26BP, params)
+    Z_a_cat = (
+        1 +
+        (F6P / params.PFKP_K_a_F6P) +
+        (ATP / params.PFKP_K_ATP) +
+        (F16BP / params.PFKP_K_F16BP) +
+        (ADP / params.PFKP_K_ADP) +
+        (F6P / params.PFKP_K_a_F6P) * (ATP / params.PFKP_K_ATP) +
+        (F16BP / params.PFKP_K_F16BP) * (ADP / params.PFKP_K_ADP)
     )
-    Pa = (
-        params.PFKP_n *
-        (1 / params.PFKP_a_KmATP) *
-        (1 / params.PFKP_a_KmF6P) *
-        ((1 + ATP / params.PFKP_a_KmATP + ADP / params.PFKP_KmADP)^(params.PFKP_n - 1)) *
-        ((1 + F6P / params.PFKP_a_KmF6P + F16BP / params.PFKP_KmF16BP)^(params.PFKP_n - 1)) *
-        ((1 + ATP / params.PFKP_a_KdATP + Phosphate / params.PFKP_a_KdPi)^params.PFKP_n) *
-        ((1 + ADP / params.PFKP_a_KdADP)^params.PFKP_n) *
-        ((1 + F26BP / params.PFKP_a_KdF26BP)^params.PFKP_n) / Z
+    Z_i_cat = (
+        1 +
+        (ATP / params.PFKP_K_ATP) +
+        (F16BP / params.PFKP_K_F16BP) +
+        (ADP / params.PFKP_K_ADP) +
+        (F16BP / params.PFKP_K_F16BP) * (ADP / params.PFKP_K_ADP)
     )
-    Pi = (
-        params.PFKP_n *
-        params.PFKP_L *
-        (1 / params.PFKP_i_KmATP) *
-        (1 / params.PFKP_i_KmF6P) *
-        ((1 + ATP / params.PFKP_i_KmATP + ADP / params.PFKP_KmADP)^(params.PFKP_n - 1)) *
-        ((1 + F6P / params.PFKP_i_KmF6P + F16BP / params.PFKP_KmF16BP)^(params.PFKP_n - 1)) *
-        ((1 + ATP / params.PFKP_i_KdATP + Phosphate / params.PFKP_i_KdPi)^params.PFKP_n) *
-        ((1 + ADP / params.PFKP_i_KdADP)^params.PFKP_n) *
-        ((1 + F26BP / params.PFKP_i_KdF26BP)^params.PFKP_n) / Z
+    Z_a_reg = (
+        (1 + Phosphate / params.PFKP_K_Phosphate) *
+        (1 + ADP / params.PFKP_K_a_ADP_reg) *
+        (1 + F26BP / params.PFKP_K_a_F26BP)
     )
-    Rate = (
-        (1 / params.PFKP_n) *
-        (params.PFKP_a_Vmax * params.PFKP_Conc * Pa + params.PFKP_i_Vmax * params.PFKP_Conc * Pi) *
-        (ATP * F6P_13C - ADP * F16BP_13C / params.PFKP_Keq)
+    Z_i_reg = (
+        (1 + ATP / params.PFKP_K_i_ATP_reg + Phosphate / params.PFKP_K_Phosphate) *
+        (1 + F26BP / params.PFKP_K_i_F26BP) *
+        (1 + Citrate / params.PFKP_K_i_Citrate)
     )
+
+    Rate =
+        params.PFKP_Vmax *
+        params.PFKP_Conc *
+        (ATP * F6P_13C - ADP * F16BP_13C / params.PFKP_Keq) *
+        (1 / params.PFKP_K_a_F6P) *
+        (1 / params.PFKP_K_ATP) *
+        (Z_a_cat^3) *
+        (Z_a_reg^4) / ((Z_a_cat^4) * (Z_a_reg^4) + params.PFKP_L * (Z_i_cat^4) * (Z_i_reg^4))
     return Rate
 end
 

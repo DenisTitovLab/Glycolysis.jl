@@ -31,10 +31,10 @@ function glycolysis_13C_tracing_ODEs(ds, s, params, t)
         rate_13C_GPI(s.G6P_12C, s.F6P_12C, G6P, F6P, params)
     ds.F6P_12C = (
         rate_13C_GPI(s.G6P_12C, s.F6P_12C, G6P, F6P, params) -
-        rate_13C_PFKP(s.F6P_12C, s.F16BP_12C, F6P, ATP, ADP, Phosphate, F26BP, F16BP, params)
+        rate_13C_PFKP(s.F6P_12C, s.F16BP_12C, F6P, ATP, F16BP, ADP, Phosphate, Citrate, F26BP, params)
     )
     ds.F16BP_12C = (
-        rate_13C_PFKP(s.F6P_12C, s.F16BP_12C, F6P, ATP, ADP, Phosphate, F26BP, F16BP, params) -
+        rate_13C_PFKP(s.F6P_12C, s.F16BP_12C, F6P, ATP, F16BP, ADP, Phosphate, Citrate, F26BP, params) -
         rate_13C_ALDO(s.F16BP_12C, s.GAP_12C, s.DHAP_12C, F16BP, GAP, DHAP, params)
     )
     ds.GAP_12C = (
@@ -65,6 +65,7 @@ function glycolysis_13C_tracing_ODEs(ds, s, params, t)
         rate_13C_MCT(s.Lactate_12C, s.Lactate_media_12C, Lactate, Lactate_media, params)
     ds.Lactate_media_12C = 0
     ds.F26BP_12C = 0
+    ds.Citrate_12C = 0
 
     ds.Glucose_media_13C = 0
     ds.Glucose_13C =
@@ -75,10 +76,10 @@ function glycolysis_13C_tracing_ODEs(ds, s, params, t)
         rate_13C_GPI(s.G6P_13C, s.F6P_13C, G6P, F6P, params)
     ds.F6P_13C = (
         rate_13C_GPI(s.G6P_13C, s.F6P_13C, G6P, F6P, params) -
-        rate_13C_PFKP(s.F6P_13C, s.F16BP_13C, F6P, ATP, ADP, Phosphate, F26BP, F16BP, params)
+        rate_13C_PFKP(s.F6P_13C, s.F16BP_13C, F6P, ATP, F16BP, ADP, Phosphate, Citrate, F26BP, params)
     )
     ds.F16BP_13C = (
-        rate_13C_PFKP(s.F6P_13C, s.F16BP_13C, F6P, ATP, ADP, Phosphate, F26BP, F16BP, params) -
+        rate_13C_PFKP(s.F6P_13C, s.F16BP_13C, F6P, ATP, F16BP, ADP, Phosphate, Citrate, F26BP, params) -
         rate_13C_ALDO(s.F16BP_13C, s.GAP_13C, s.DHAP_13C, F16BP, GAP, DHAP, params)
     )
     ds.GAP_13C = (
@@ -109,17 +110,18 @@ function glycolysis_13C_tracing_ODEs(ds, s, params, t)
         rate_13C_MCT(s.Lactate_13C, s.Lactate_media_13C, Lactate, Lactate_media, params)
     ds.Lactate_media_13C = 0
     ds.F26BP_13C = 0
+    ds.Citrate_13C = 0
 
     ds.ATP = (
-        -rate_HK1(Glucose, G6P, ATP, Phosphate, ADP, params) -
-        rate_PFK(F6P, ATP, F16BP, ADP, Phosphate, Citrate, F26BP, params) +
+        -rate_HK1(Glucose, G6P, ATP, ADP, Phosphate, params) -
+        rate_PFKP(F6P, ATP, F16BP, ADP, Phosphate, Citrate, F26BP, params) +
         rate_PGK(BPG, ADP, ATP, ThreePG, params) +
         rate_PKM2(PEP, ADP, F16BP, ATP, Pyruvate, params) - rate_ATPase(ATP, ADP, Phosphate, params) +
         rate_AK(ATP, ADP, AMP, params)
     )
     ds.ADP = (
-        rate_HK1(Glucose, G6P, ATP, Phosphate, ADP, params) +
-        rate_PFK(F6P, ATP, F16BP, ADP, Phosphate, Citrate, F26BP, params) -
+        rate_HK1(Glucose, G6P, ATP, ADP, Phosphate, params) +
+        rate_PFKP(F6P, ATP, F16BP, ADP, Phosphate, Citrate, F26BP, params) -
         rate_PGK(BPG, ADP, ATP, ThreePG, params) - rate_PKM2(PEP, ADP, F16BP, ATP, Pyruvate, params) +
         rate_ATPase(ATP, ADP, Phosphate, params) - 2 * rate_AK(ATP, ADP, AMP, params)
     )
