@@ -2,69 +2,69 @@ function free_to_total_conc(f, params)
     b = similar(f)
     b.Glucose_media = 0.0
     b.Glucose = (
-        bindingGLUT(f.Glucose_media, f.Glucose, params).Glucose +
-        bindingHK1(f.Glucose, f.G6P, f.ATP, f.ADP, f.Phosphate, params).Glucose
+        binding_GLUT(f.Glucose_media, f.Glucose, params).Glucose +
+        binding_HK1(f.Glucose, f.G6P, f.ATP, f.ADP, f.Phosphate, params).Glucose
     )
     b.G6P = (
-        bindingHK1(f.Glucose, f.G6P, f.ATP, f.ADP, f.Phosphate, params).G6P +
-        bindingGPI(f.G6P, f.F6P, params).G6P
+        binding_HK1(f.Glucose, f.G6P, f.ATP, f.ADP, f.Phosphate, params).G6P +
+        binding_GPI(f.G6P, f.F6P, params).G6P
     )
     b.F6P = (
-        bindingGPI(f.G6P, f.F6P, params).F6P +
-        bindingPFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).F6P
+        binding_GPI(f.G6P, f.F6P, params).F6P +
+        binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).F6P
     )
     b.F16BP = (
-        bindingPFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).F16BP +
-        bindingALDO(f.F16BP, f.GAP, f.DHAP, params).F16BP +
-        bindingPKM2(f.PEP, f.ADP, f.F16BP, f.ATP, params).F16BP
+        binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).F16BP +
+        binding_ALDO(f.F16BP, f.GAP, f.DHAP, params).F16BP +
+        binding_PKM2(f.PEP, f.ADP, f.F16BP, f.ATP, params).F16BP
     )
     b.GAP = (
-        bindingALDO(f.F16BP, f.GAP, f.DHAP, params).GAP +
-        bindingTPI(f.GAP, f.DHAP, params).GAP +
-        bindingGAPDH(f.GAP, f.NAD, f.Phosphate, f.BPG, f.NADH, params).GAP
+        binding_ALDO(f.F16BP, f.GAP, f.DHAP, params).GAP +
+        binding_TPI(f.GAP, f.DHAP, params).GAP +
+        binding_GAPDH(f.GAP, f.NAD, f.Phosphate, f.BPG, f.NADH, params).GAP
     )
-    b.DHAP = (bindingALDO(f.F16BP, f.GAP, f.DHAP, params).DHAP + bindingTPI(f.GAP, f.DHAP, params).DHAP)
+    b.DHAP = (binding_ALDO(f.F16BP, f.GAP, f.DHAP, params).DHAP + binding_TPI(f.GAP, f.DHAP, params).DHAP)
     b.BPG = (
-        bindingGAPDH(f.GAP, f.NAD, f.Phosphate, f.BPG, f.NADH, params).BPG +
-        bindingPGK(f.BPG, f.ADP, f.ATP, f.ThreePG, params).BPG
+        binding_GAPDH(f.GAP, f.NAD, f.Phosphate, f.BPG, f.NADH, params).BPG +
+        binding_PGK(f.BPG, f.ADP, f.ATP, f.ThreePG, params).BPG
     )
     b.ThreePG = (
-        bindingPGK(f.BPG, f.ADP, f.ATP, f.ThreePG, params).ThreePG +
-        bindingPGM(f.ThreePG, f.TwoPG, params).ThreePG
+        binding_PGK(f.BPG, f.ADP, f.ATP, f.ThreePG, params).ThreePG +
+        binding_PGM(f.ThreePG, f.TwoPG, params).ThreePG
     )
-    b.TwoPG = (bindingPGM(f.ThreePG, f.TwoPG, params).TwoPG + bindingENO(f.TwoPG, f.PEP, params).TwoPG)
-    b.PEP = (bindingENO(f.TwoPG, f.PEP, params).PEP + bindingPKM2(f.PEP, f.ADP, f.F16BP, f.ATP, params).PEP)
+    b.TwoPG = (binding_PGM(f.ThreePG, f.TwoPG, params).TwoPG + binding_ENO(f.TwoPG, f.PEP, params).TwoPG)
+    b.PEP = (binding_ENO(f.TwoPG, f.PEP, params).PEP + binding_PKM2(f.PEP, f.ADP, f.F16BP, f.ATP, params).PEP)
     b.Pyruvate = 0.0
-    b.Lactate = bindingMCT(f.Lactate, f.Lactate_media, params).Lactate
+    b.Lactate = binding_MCT(f.Lactate, f.Lactate_media, params).Lactate
     b.Lactate_media = 0.0
     b.ATP = (
-        bindingHK1(f.Glucose, f.G6P, f.ATP, f.ADP, f.Phosphate, params).ATP +
-        bindingPFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).ATP +
-        bindingPGK(f.BPG, f.ADP, f.ATP, f.ThreePG, params).ATP +
-        bindingPKM2(f.PEP, f.ADP, f.F16BP, f.ATP, params).ATP
+        binding_HK1(f.Glucose, f.G6P, f.ATP, f.ADP, f.Phosphate, params).ATP +
+        binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).ATP +
+        binding_PGK(f.BPG, f.ADP, f.ATP, f.ThreePG, params).ATP +
+        binding_PKM2(f.PEP, f.ADP, f.F16BP, f.ATP, params).ATP
     )
     b.ADP = (
-        bindingHK1(f.Glucose, f.G6P, f.ATP, f.ADP, f.Phosphate, params).ADP +
-        bindingPFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).ADP +
-        bindingPGK(f.BPG, f.ADP, f.ATP, f.ThreePG, params).ADP +
-        bindingPKM2(f.PEP, f.ADP, f.F16BP, f.ATP, params).ADP
+        binding_HK1(f.Glucose, f.G6P, f.ATP, f.ADP, f.Phosphate, params).ADP +
+        binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).ADP +
+        binding_PGK(f.BPG, f.ADP, f.ATP, f.ThreePG, params).ADP +
+        binding_PKM2(f.PEP, f.ADP, f.F16BP, f.ATP, params).ADP
     )
     b.AMP = 0
     b.Phosphate = (
-        bindingGAPDH(f.GAP, f.NAD, f.Phosphate, f.BPG, f.NADH, params).Phosphate +
-        bindingPFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).Phosphate +
-        bindingHK1(f.Glucose, f.G6P, f.ATP, f.ADP, f.Phosphate, params).Phosphate
+        binding_GAPDH(f.GAP, f.NAD, f.Phosphate, f.BPG, f.NADH, params).Phosphate +
+        binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).Phosphate +
+        binding_HK1(f.Glucose, f.G6P, f.ATP, f.ADP, f.Phosphate, params).Phosphate
     )
     b.NAD = (
-        bindingLDH(f.Pyruvate, f.NADH, f.NAD, f.Lactate, params).NAD +
-        bindingGAPDH(f.GAP, f.NAD, f.Phosphate, f.BPG, f.NADH, params).NAD
+        binding_LDH(f.Pyruvate, f.NADH, f.NAD, f.Lactate, params).NAD +
+        binding_GAPDH(f.GAP, f.NAD, f.Phosphate, f.BPG, f.NADH, params).NAD
     )
     b.NADH = (
-        bindingGAPDH(f.GAP, f.NAD, f.Phosphate, f.BPG, f.NADH, params).NADH +
-        bindingLDH(f.Pyruvate, f.NADH, f.NAD, f.Lactate, params).NADH
+        binding_GAPDH(f.GAP, f.NAD, f.Phosphate, f.BPG, f.NADH, params).NADH +
+        binding_LDH(f.Pyruvate, f.NADH, f.NAD, f.Lactate, params).NADH
     )
-    b.F26BP = (bindingPFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).F26BP)
-    b.Citrate = (bindingPFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).Citrate)
+    b.F26BP = (binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).F26BP)
+    b.Citrate = (binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).Citrate)
     return (b + f) .* cell_volume_correction
 end
 
@@ -72,73 +72,73 @@ function free_to_bound_conc(f, params)
     b = similar(f)
     b.Glucose_media = 0.0
     b.Glucose = (
-        bindingGLUT(f.Glucose_media, f.Glucose, params).Glucose +
-        bindingHK1(f.Glucose, f.G6P, f.ATP, f.ADP, f.Phosphate, params).Glucose
+        binding_GLUT(f.Glucose_media, f.Glucose, params).Glucose +
+        binding_HK1(f.Glucose, f.G6P, f.ATP, f.ADP, f.Phosphate, params).Glucose
     )
     b.G6P = (
-        bindingHK1(f.Glucose, f.G6P, f.ATP, f.ADP, f.Phosphate, params).G6P +
-        bindingGPI(f.G6P, f.F6P, params).G6P
+        binding_HK1(f.Glucose, f.G6P, f.ATP, f.ADP, f.Phosphate, params).G6P +
+        binding_GPI(f.G6P, f.F6P, params).G6P
     )
     b.F6P = (
-        bindingGPI(f.G6P, f.F6P, params).F6P +
-        bindingPFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).F6P
+        binding_GPI(f.G6P, f.F6P, params).F6P +
+        binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).F6P
     )
     b.F16BP = (
-        bindingPFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).F16BP +
-        bindingALDO(f.F16BP, f.GAP, f.DHAP, params).F16BP +
-        bindingPKM2(f.PEP, f.ADP, f.F16BP, f.ATP, params).F16BP
+        binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).F16BP +
+        binding_ALDO(f.F16BP, f.GAP, f.DHAP, params).F16BP +
+        binding_PKM2(f.PEP, f.ADP, f.F16BP, f.ATP, params).F16BP
     )
     b.GAP = (
-        bindingALDO(f.F16BP, f.GAP, f.DHAP, params).GAP +
-        bindingTPI(f.GAP, f.DHAP, params).GAP +
-        bindingGAPDH(f.GAP, f.NAD, f.Phosphate, f.BPG, f.NADH, params).GAP
+        binding_ALDO(f.F16BP, f.GAP, f.DHAP, params).GAP +
+        binding_TPI(f.GAP, f.DHAP, params).GAP +
+        binding_GAPDH(f.GAP, f.NAD, f.Phosphate, f.BPG, f.NADH, params).GAP
     )
     b.DHAP = (ALDO(f.F16BP, f.GAP, f.DHAP, params).DHAP + TPI(f.GAP, f.DHAP, params).DHAP)
     b.BPG = (
-        bindingGAPDH(f.GAP, f.NAD, f.Phosphate, f.BPG, f.NADH, params).BPG +
-        bindingPGK(f.BPG, f.ADP, f.ATP, f.ThreePG, params).BPG
+        binding_GAPDH(f.GAP, f.NAD, f.Phosphate, f.BPG, f.NADH, params).BPG +
+        binding_PGK(f.BPG, f.ADP, f.ATP, f.ThreePG, params).BPG
     )
     b.ThreePG = (
-        bindingPGK(f.BPG, f.ADP, f.ATP, f.ThreePG, params).ThreePG +
-        bindingPGM(f.ThreePG, f.TwoPG, params).ThreePG
+        binding_PGK(f.BPG, f.ADP, f.ATP, f.ThreePG, params).ThreePG +
+        binding_PGM(f.ThreePG, f.TwoPG, params).ThreePG
     )
-    b.TwoPG = (bindingPGM(f.ThreePG, f.TwoPG, params).TwoPG + bindingENO(f.TwoPG, f.PEP, params).TwoPG)
-    b.PEP = (bindingENO(f.TwoPG, f.PEP, params).PEP + bindingPKM2(f.PEP, f.ADP, f.F16BP, f.ATP, params).PEP)
+    b.TwoPG = (binding_PGM(f.ThreePG, f.TwoPG, params).TwoPG + binding_ENO(f.TwoPG, f.PEP, params).TwoPG)
+    b.PEP = (binding_ENO(f.TwoPG, f.PEP, params).PEP + binding_PKM2(f.PEP, f.ADP, f.F16BP, f.ATP, params).PEP)
     b.Pyruvate = 0.0
-    b.Lactate = bindingMCT(f.Lactate, f.Lactate_media, params).Lactate
+    b.Lactate = binding_MCT(f.Lactate, f.Lactate_media, params).Lactate
     b.Lactate_media = 0.0
     b.ATP = (
-        bindingHK1(f.Glucose, f.G6P, f.ATP, f.ADP, f.Phosphate, params).ATP +
-        bindingPFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).ATP +
-        bindingPGK(f.BPG, f.ADP, f.ATP, f.ThreePG, params).ATP +
-        bindingPKM2(f.PEP, f.ADP, f.F16BP, f.ATP, params).ATP
+        binding_HK1(f.Glucose, f.G6P, f.ATP, f.ADP, f.Phosphate, params).ATP +
+        binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).ATP +
+        binding_PGK(f.BPG, f.ADP, f.ATP, f.ThreePG, params).ATP +
+        binding_PKM2(f.PEP, f.ADP, f.F16BP, f.ATP, params).ATP
     )
     b.ADP = (
-        bindingHK1(f.Glucose, f.G6P, f.ATP, f.ADP, f.Phosphate, params).ADP +
-        bindingPFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).ADP +
-        bindingPGK(f.BPG, f.ADP, f.ATP, f.ThreePG, params).ADP +
-        bindingPKM2(f.PEP, f.ADP, f.F16BP, f.ATP, params).ADP
+        binding_HK1(f.Glucose, f.G6P, f.ATP, f.ADP, f.Phosphate, params).ADP +
+        binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).ADP +
+        binding_PGK(f.BPG, f.ADP, f.ATP, f.ThreePG, params).ADP +
+        binding_PKM2(f.PEP, f.ADP, f.F16BP, f.ATP, params).ADP
     )
     b.AMP = 0.0
     b.Phosphate = (
-        bindingGAPDH(f.GAP, f.NAD, f.Phosphate, f.BPG, f.NADH, params).Phosphate +
-        bindingPFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).Phosphate +
-        bindingHK1(f.Glucose, f.G6P, f.ATP, f.ADP, f.Phosphate, params).Phosphate
+        binding_GAPDH(f.GAP, f.NAD, f.Phosphate, f.BPG, f.NADH, params).Phosphate +
+        binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).Phosphate +
+        binding_HK1(f.Glucose, f.G6P, f.ATP, f.ADP, f.Phosphate, params).Phosphate
     )
     b.NAD = (
-        bindingLDH(f.Pyruvate, f.NADH, f.NAD, f.Lactate, params).NAD +
-        bindingGAPDH(f.GAP, f.NAD, f.Phosphate, f.BPG, f.NADH, params).NAD
+        binding_LDH(f.Pyruvate, f.NADH, f.NAD, f.Lactate, params).NAD +
+        binding_GAPDH(f.GAP, f.NAD, f.Phosphate, f.BPG, f.NADH, params).NAD
     )
     b.NADH = (
-        bindingGAPDH(f.GAP, f.NAD, f.Phosphate, f.BPG, f.NADH, params).NADH +
-        bindingLDH(f.Pyruvate, f.NADH, f.NAD, f.Lactate, params).NADH
+        binding_GAPDH(f.GAP, f.NAD, f.Phosphate, f.BPG, f.NADH, params).NADH +
+        binding_LDH(f.Pyruvate, f.NADH, f.NAD, f.Lactate, params).NADH
     )
-    b.F26BP = (bindingPFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).F26BP)
-    b.Citrate = (bindingPFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).Citrate)
+    b.F26BP = (binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).F26BP)
+    b.Citrate = (binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).Citrate)
     return b
 end
 
-function bindingGLUT(Glucose_media, Glucose, params)
+function binding_GLUT(Glucose_media, Glucose, params)
     Glucose_bound = (
         (params.GLUT_Conc / params.GLUT_MW) *
         (Glucose_media / params.GLUT_Km_Glucose + Glucose / params.GLUT_Km_Glucose) /
@@ -147,7 +147,7 @@ function bindingGLUT(Glucose_media, Glucose, params)
     return (Glucose = Glucose_bound,)
 end
 
-function bindingHK1(Glucose, G6P, ATP, ADP, Phosphate, params)
+function binding_HK1(Glucose, G6P, ATP, ADP, Phosphate, params)
     Z_a_cat = (
         1 +
         (Glucose / params.HK1_K_Glucose) +
@@ -214,7 +214,7 @@ function bindingHK1(Glucose, G6P, ATP, ADP, Phosphate, params)
     )
 end
 
-function bindingGPI(G6P, F6P, params)
+function binding_GPI(G6P, F6P, params)
     G6P_bound = (
         (params.GPI_Conc / params.GPI_MW) * (G6P / params.GPI_Km_G6P) /
         (1 + G6P / params.GPI_Km_G6P + F6P / params.GPI_Km_F6P)
@@ -226,7 +226,7 @@ function bindingGPI(G6P, F6P, params)
     return (G6P = G6P_bound, F6P = F6P_bound)
 end
 
-function bindingPFKP(F6P, ATP, F16BP, ADP, Phosphate, Citrate, F26BP, params)
+function binding_PFKP(F6P, ATP, F16BP, ADP, Phosphate, Citrate, F26BP, params)
 
     Z_a_cat = (
         1 +
@@ -328,7 +328,7 @@ function bindingPFKP(F6P, ATP, F16BP, ADP, Phosphate, Citrate, F26BP, params)
     )
 end
 
-function bindingALDO(F16BP, GAP, DHAP, params)
+function binding_ALDO(F16BP, GAP, DHAP, params)
     denom = (
         1 +
         GAP * DHAP / (params.ALDO_Kd_DHAP * params.ALDO_Km_GAP) +
@@ -353,7 +353,7 @@ function bindingALDO(F16BP, GAP, DHAP, params)
     return (F16BP = F16BP_bound, GAP = GAP_bound, DHAP = DHAP_bound)
 end
 
-function bindingTPI(GAP, DHAP, params)
+function binding_TPI(GAP, DHAP, params)
     GAP_bound = (
         (params.TPI_Conc / params.TPI_MW) * (GAP / params.TPI_Km_GAP) /
         (1 + DHAP / params.TPI_Km_DHAP + GAP / params.TPI_Km_GAP)
@@ -365,7 +365,7 @@ function bindingTPI(GAP, DHAP, params)
     return (GAP = GAP_bound, DHAP = DHAP_bound)
 end
 
-function bindingGAPDH(GAP, NAD, Phosphate, BPG, NADH, params)
+function binding_GAPDH(GAP, NAD, Phosphate, BPG, NADH, params)
     Z_a =
         (
             1 +
@@ -466,7 +466,7 @@ function bindingGAPDH(GAP, NAD, Phosphate, BPG, NADH, params)
     return (GAP = GAP_bound, NAD = NAD_bound, Phosphate = Phosphate_bound, BPG = BPG_bound, NADH = NADH_bound)
 end
 
-function bindingPGK(BPG, ADP, ATP, ThreePG, params)
+function binding_PGK(BPG, ADP, ATP, ThreePG, params)
     denom = (
         1 +
         BPG / params.PGK_K_BPG +
@@ -508,7 +508,7 @@ function bindingPGK(BPG, ADP, ATP, ThreePG, params)
     return (BPG = BPG_bound, ADP = ADP_bound, ATP = ATP_bound, ThreePG = ThreePG_bound)
 end
 
-function bindingPGM(ThreePG, TwoPG, params)
+function binding_PGM(ThreePG, TwoPG, params)
     ThreePG_bound = (
         (params.PGM_Conc / params.PGM_MW) * (ThreePG / params.PGM_Km_ThreePG) /
         (1 + ThreePG / params.PGM_Km_ThreePG + TwoPG / params.PGM_Km_TwoPG)
@@ -520,7 +520,7 @@ function bindingPGM(ThreePG, TwoPG, params)
     return (ThreePG = ThreePG_bound, TwoPG = TwoPG_bound)
 end
 
-function bindingENO(TwoPG, PEP, params)
+function binding_ENO(TwoPG, PEP, params)
     TwoPG_bound = (
         (params.ENO_Conc / params.ENO_MW) * (TwoPG / params.ENO_Km_TwoPG) /
         (1 + TwoPG / params.ENO_Km_TwoPG + PEP / params.ENO_Km_PEP)
@@ -532,7 +532,7 @@ function bindingENO(TwoPG, PEP, params)
     return (TwoPG = TwoPG_bound, PEP = PEP_bound)
 end
 
-function bindingPKM2(PEP, ADP, F16BP, ATP, params)
+function binding_PKM2(PEP, ADP, F16BP, ATP, params)
     Z = (
         ((1 + PEP / params.PKM2_a_KmPEP)^params.PKM2_n) *
         ((1 + ADP / params.PKM2_a_KmADP + ATP / params.PKM2_a_KdATP)^params.PKM2_n) *
@@ -580,7 +580,7 @@ function bindingPKM2(PEP, ADP, F16BP, ATP, params)
     return (PEP = PEP_bound, ADP = ADP_bound, F16BP = F16BP_bound, ATP = ATP_bound)
 end
 
-function bindingLDH(Pyruvate, NADH, NAD, Lactate, params)
+function binding_LDH(Pyruvate, NADH, NAD, Lactate, params)
     denom = (
         1 +
         Pyruvate * params.LDH_Km_NADH / (params.LDH_Kd_NADH * params.LDH_Km_Pyruvate) +
@@ -616,7 +616,7 @@ function bindingLDH(Pyruvate, NADH, NAD, Lactate, params)
     return (NAD = NAD_bound, NADH = NADH_bound)
 end
 
-function bindingMCT(Lactate, Lactate_media, params)
+function binding_MCT(Lactate, Lactate_media, params)
     Lactate_bound = (
         (params.MCT_Conc / params.MCT_MW) *
         (Lactate / params.MCT_Km_Lactate + Lactate_media / params.MCT_Km_Lactate) /

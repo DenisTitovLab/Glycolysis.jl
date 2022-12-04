@@ -18,31 +18,31 @@ function conc_to_rates(s, params)
         :ATPprod,
         :ATPase,
     )
-    r.GLUT = rateGLUT(s.Glucose_media, s.Glucose, params)
-    r.HK1 = rateHK1(s.Glucose, s.G6P, s.ATP, s.Phosphate, s.ADP, params)
-    r.GPI = rateGPI(s.G6P, s.F6P, params)
-    r.PFKP = ratePFKP(s.F6P, s.ATP, s.F16BP, s.ADP, s.Phosphate, s.Citrate, s.F26BP, params)
-    r.ALDO = rateALDO(s.F16BP, s.GAP, s.DHAP, params)
-    r.TPI = rateTPI(s.GAP, s.DHAP, params)
-    r.GAPDH = rateGAPDH(s.GAP, s.NAD, s.Phosphate, s.BPG, s.NADH, params)
-    r.PGK = ratePGK(s.BPG, s.ADP, s.ATP, s.ThreePG, params)
-    r.PGM = ratePGM(s.ThreePG, s.TwoPG, params)
-    r.ENO = rateENO(s.TwoPG, s.PEP, params)
-    r.PKM2 = ratePKM2(s.PEP, s.ADP, s.F16BP, s.ATP, s.Pyruvate, params)
-    r.LDH = rateLDH(s.Pyruvate, s.NADH, s.NAD, s.Lactate, params)
-    r.MCT = rateMCT(s.Lactate, s.Lactate_media, params)
+    r.GLUT = rate_GLUT(s.Glucose_media, s.Glucose, params)
+    r.HK1 = rate_HK1(s.Glucose, s.G6P, s.ATP, s.Phosphate, s.ADP, params)
+    r.GPI = rate_GPI(s.G6P, s.F6P, params)
+    r.PFKP = rate_PFKP(s.F6P, s.ATP, s.F16BP, s.ADP, s.Phosphate, s.Citrate, s.F26BP, params)
+    r.ALDO = rate_ALDO(s.F16BP, s.GAP, s.DHAP, params)
+    r.TPI = rate_TPI(s.GAP, s.DHAP, params)
+    r.GAPDH = rate_GAPDH(s.GAP, s.NAD, s.Phosphate, s.BPG, s.NADH, params)
+    r.PGK = rate_PGK(s.BPG, s.ADP, s.ATP, s.ThreePG, params)
+    r.PGM = rate_PGM(s.ThreePG, s.TwoPG, params)
+    r.ENO = rate_ENO(s.TwoPG, s.PEP, params)
+    r.PKM2 = rate_PKM2(s.PEP, s.ADP, s.F16BP, s.ATP, s.Pyruvate, params)
+    r.LDH = rate_LDH(s.Pyruvate, s.NADH, s.NAD, s.Lactate, params)
+    r.MCT = rate_MCT(s.Lactate, s.Lactate_media, params)
     r.ATPprod = (
-        -rateHK1(s.Glucose, s.G6P, s.ATP, s.Phosphate, s.ADP, params) -
-        ratePFKP(s.F6P, s.ATP, s.F16BP, s.ADP, s.Phosphate, s.Citrate, s.F26BP, params) +
-        ratePGK(s.BPG, s.ADP, s.ATP, s.ThreePG, params) +
-        ratePKM2(s.PEP, s.ADP, s.F16BP, s.ATP, s.Pyruvate, params) +
-        rateAK(s.ATP, s.ADP, s.AMP, params)
+        -rate_HK1(s.Glucose, s.G6P, s.ATP, s.Phosphate, s.ADP, params) -
+        rate_PFKP(s.F6P, s.ATP, s.F16BP, s.ADP, s.Phosphate, s.Citrate, s.F26BP, params) +
+        rate_PGK(s.BPG, s.ADP, s.ATP, s.ThreePG, params) +
+        rate_PKM2(s.PEP, s.ADP, s.F16BP, s.ATP, s.Pyruvate, params) +
+        rate_AK(s.ATP, s.ADP, s.AMP, params)
     )
-    r.ATPase = rateATPase(s.ATP, s.ADP, s.Phosphate, params)
+    r.ATPase = rate_ATPase(s.ATP, s.ADP, s.Phosphate, params)
     return r
 end
 
-function rateGLUT(Glucose_media, Glucose, params)
+function rate_GLUT(Glucose_media, Glucose, params)
     Rate = (
         (params.GLUT_Vmax * params.GLUT_Conc / params.GLUT_Km_Glucose) *
         (Glucose_media - (1 / params.GLUT_Keq) * Glucose) /
@@ -51,7 +51,7 @@ function rateGLUT(Glucose_media, Glucose, params)
     return Rate
 end
 
-function rateHK1(Glucose, G6P, ATP, ADP, Phosphate, params)
+function rate_HK1(Glucose, G6P, ATP, ADP, Phosphate, params)
 
     Z = (
         (
@@ -83,7 +83,7 @@ function rateHK1(Glucose, G6P, ATP, ADP, Phosphate, params)
     return Rate
 end
 
-function rateGPI(G6P, F6P, params)
+function rate_GPI(G6P, F6P, params)
     Rate = (
         (params.GPI_Vmax * params.GPI_Conc / params.GPI_Km_G6P) * (G6P - (1 / params.GPI_Keq) * F6P) /
         (1 + G6P / params.GPI_Km_G6P + F6P / params.GPI_Km_F6P)
@@ -91,7 +91,7 @@ function rateGPI(G6P, F6P, params)
     return Rate
 end
 
-function ratePFKP(F6P, ATP, F16BP, ADP, Phosphate, Citrate, F26BP, params)
+function rate_PFKP(F6P, ATP, F16BP, ADP, Phosphate, Citrate, F26BP, params)
 
     Z_a_cat = (
         1 +
@@ -132,7 +132,7 @@ function ratePFKP(F6P, ATP, F16BP, ADP, Phosphate, Citrate, F26BP, params)
     return Rate
 end
 
-function rateALDO(F16BP, GAP, DHAP, params)
+function rate_ALDO(F16BP, GAP, DHAP, params)
     Rate = (
         (params.ALDO_Vmax * params.ALDO_Conc / params.ALDO_Km_F16BP) * (
             (F16BP - (1 / params.ALDO_Keq) * (DHAP * GAP)) / (
@@ -148,7 +148,7 @@ function rateALDO(F16BP, GAP, DHAP, params)
     return Rate
 end
 
-function rateTPI(GAP, DHAP, params)
+function rate_TPI(GAP, DHAP, params)
     Rate = (
         (params.TPI_Vmax * params.TPI_Conc / params.TPI_Km_DHAP) * (DHAP - (1 / params.TPI_Keq) * GAP) /
         (1 + (DHAP / params.TPI_Km_DHAP) + (GAP / params.TPI_Km_GAP))
@@ -156,7 +156,7 @@ function rateTPI(GAP, DHAP, params)
     return Rate
 end
 
-function rateGAPDH(GAP, NAD, Phosphate, BPG, NADH, params)
+function rate_GAPDH(GAP, NAD, Phosphate, BPG, NADH, params)
     Z_a =
         (
             1 +
@@ -187,7 +187,7 @@ function rateGAPDH(GAP, NAD, Phosphate, BPG, NADH, params)
     return Rate
 end
 
-function ratePGK(BPG, ADP, ATP, ThreePG, params)
+function rate_PGK(BPG, ADP, ATP, ThreePG, params)
     Rate = (
         (params.PGK_Vmax * params.PGK_Conc / (params.PGK_α * params.PGK_K_BPG * params.PGK_K_ADP)) *
         (BPG * ADP - (1 / params.PGK_Keq) * (ThreePG * ATP)) / (
@@ -204,7 +204,7 @@ function ratePGK(BPG, ADP, ATP, ThreePG, params)
     return Rate
 end
 
-function ratePGM(ThreePG, TwoPG, params)
+function rate_PGM(ThreePG, TwoPG, params)
     Rate = (
         (params.PGM_Vmax * params.PGM_Conc / params.PGM_Km_ThreePG) *
         (ThreePG - (1 / params.PGM_Keq) * TwoPG) /
@@ -213,7 +213,7 @@ function ratePGM(ThreePG, TwoPG, params)
     return Rate
 end
 
-function rateENO(TwoPG, PEP, params)
+function rate_ENO(TwoPG, PEP, params)
     Rate = (
         (params.ENO_Vmax * params.ENO_Conc / params.ENO_Km_TwoPG) * (TwoPG - (1 / params.ENO_Keq) * PEP) /
         (1 + TwoPG / params.ENO_Km_TwoPG + PEP / params.ENO_Km_PEP)
@@ -221,7 +221,7 @@ function rateENO(TwoPG, PEP, params)
     return Rate
 end
 
-function ratePKM2(PEP, ADP, F16BP, ATP, Pyruvate, params)
+function rate_PKM2(PEP, ADP, F16BP, ATP, Pyruvate, params)
     Z = (
         ((1 + PEP / params.PKM2_a_KmPEP)^4) *
         ((1 + ADP / params.PKM2_a_KmADP + ATP / params.PKM2_a_KdATP)^4) *
@@ -256,7 +256,7 @@ function ratePKM2(PEP, ADP, F16BP, ATP, Pyruvate, params)
     return Rate
 end
 
-function rateLDH(Pyruvate, NADH, NAD, Lactate, params)
+function rate_LDH(Pyruvate, NADH, NAD, Lactate, params)
     Rate = (
         (params.LDH_Vmax * params.LDH_Conc / (params.LDH_Km_Pyruvate * params.LDH_Kd_NADH)) *
         (Pyruvate * NADH - (1 / params.LDH_Keq) * (Lactate * NAD)) / (
@@ -276,7 +276,7 @@ function rateLDH(Pyruvate, NADH, NAD, Lactate, params)
     return Rate
 end
 
-function rateMCT(Lactate, Lactate_media, params)
+function rate_MCT(Lactate, Lactate_media, params)
     Rate = (
         (params.MCT_Vmax * params.MCT_Conc / params.MCT_Km_Lactate) *
         (Lactate - (1 / params.MCT_Keq) * Lactate_media) /
@@ -285,7 +285,7 @@ function rateMCT(Lactate, Lactate_media, params)
     return Rate
 end
 
-function rateAK(ATP, ADP, AMP, params)
+function rate_AK(ATP, ADP, AMP, params)
     Rate = (
         (params.AK_Vmax / (params.AK_Km_ADP^2)) * (ADP^2 - (1 / params.AK_Keq) * (ATP * AMP)) / (
             (1 + ADP / params.AK_Km_ADP + ATP / params.AK_Km_ATP) *
@@ -295,7 +295,7 @@ function rateAK(ATP, ADP, AMP, params)
     return Rate
 end
 
-function rateATPase(ATP, ADP, Phosphate, params)
+function rate_ATPase(ATP, ADP, Phosphate, params)
     Rate =
         (params.ATPase_Vmax / params.ATPase_Km_ATP) *
         (
