@@ -1,4 +1,44 @@
-#Rate equations for glycolytic enzymes
+function conc_to_rates(s, params)
+    r = @LVector eltype(s) (
+        :GLUT,
+        :HK1,
+        :GPI,
+        :PFKP,
+        :ALDO,
+        :TPI,
+        :GAPDH,
+        :PGK,
+        :PGM,
+        :ENO,
+        :PKM2,
+        :LDH,
+        :MCT,
+        :ATPprod,
+        :ATPase,
+    )
+    r.GLUT = rateGLUT(s.Glucose_media, s.Glucose, params)
+    r.HK1 = rateHK1(s.Glucose, s.G6P, s.ATP, s.Phosphate, s.ADP, params)
+    r.GPI = rateGPI(s.G6P, s.F6P, params)
+    r.PFKP = ratePFKP(s.F6P, s.ATP, s.F16BP, s.ADP, s.Phosphate, s.Citrate, s.F26BP, params)
+    r.ALDO = rateALDO(s.F16BP, s.GAP, s.DHAP, params)
+    r.TPI = rateTPI(s.GAP, s.DHAP, params)
+    r.GAPDH = rateGAPDH(s.GAP, s.NAD, s.Phosphate, s.BPG, s.NADH, params)
+    r.PGK = ratePGK(s.BPG, s.ADP, s.ATP, s.ThreePG, params)
+    r.PGM = ratePGM(s.ThreePG, s.TwoPG, params)
+    r.ENO = rateENO(s.TwoPG, s.PEP, params)
+    r.PKM2 = ratePKM2(s.PEP, s.ADP, s.F16BP, s.ATP, s.Pyruvate, params)
+    r.LDH = rateLDH(s.Pyruvate, s.NADH, s.NAD, s.Lactate, params)
+    r.MCT = rateMCT(s.Lactate, s.Lactate_media, params)
+    r.ATPprod = (
+        -rateHK1(s.Glucose, s.G6P, s.ATP, s.Phosphate, s.ADP, params) -
+        ratePFKP(s.F6P, s.ATP, s.F16BP, s.ADP, s.Phosphate, s.Citrate, s.F26BP, params) +
+        ratePGK(s.BPG, s.ADP, s.ATP, s.ThreePG, params) +
+        ratePKM2(s.PEP, s.ADP, s.F16BP, s.ATP, s.Pyruvate, params) +
+        rateAK(s.ATP, s.ADP, s.AMP, params)
+    )
+    r.ATPase = rateATPase(s.ATP, s.ADP, s.Phosphate, params)
+    return r
+end
 
 function rateGLUT(Glucose_media, Glucose, params)
     Rate = (

@@ -14,7 +14,7 @@ cell_volume_correction = water_fraction_cell_volume * cytosol_fraction_cell_volu
 cell_protein_density = 0.2 #mg/ul
 
 # Define initial concentrations of metabolites for model simulations
-initial_concentrations = LVector(
+glycolysis_init_conc = LVector(
     Glucose_media = 25e-3,
     Glucose = 6.12e-3 / cell_volume_correction,
     G6P = 1.73e-4 / cell_volume_correction,
@@ -50,7 +50,7 @@ Keq - either unitless or concentration
 MW - g / mole /1000
 =#
 
-model_params_w_uncertainty = LVector(
+glycolysis_params_w_uncertainty = LVector(
     # Intermediate_cons_frac = 0.0,
     GLUT_Km_Glucose = 20e-3 ± 4e-3,
     GLUT_Conc = (cell_protein_density / cell_volume_correction) * (1.4e-4 ± 4e-5),
@@ -195,5 +195,5 @@ model_params_w_uncertainty = LVector(
     ATPase_Vmax = 0.0002, #Km, M
 )
 
-model_params = Measurements.value.(model_params_w_uncertainty)
-model_params_uncertainty = Measurements.uncertainty.(model_params_w_uncertainty)
+glycolysis_params = Measurements.value.(glycolysis_params_w_uncertainty)
+glycolysis_params_uncertainty = Measurements.uncertainty.(glycolysis_params_w_uncertainty)
