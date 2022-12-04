@@ -39,6 +39,52 @@ glycolysis_init_conc = LVector(
     Citrate = 0.0 / cell_volume_correction,
 )
 
+tracing_13C_multiplier = 1e-3
+glycolysis_13C_tracing_init_conc = LVector(
+    Glucose_media_12C = 25e-3,
+    Glucose_12C = 6.12e-3 / cell_volume_correction,
+    G6P_12C = 1.73e-4 / cell_volume_correction,
+    F6P_12C = 8.17e-5 / cell_volume_correction,
+    F16BP_12C = 8.75e-4 / cell_volume_correction,
+    GAP_12C = 1.12e-4 / cell_volume_correction,
+    DHAP_12C = 7.19e-4 / cell_volume_correction,
+    BPG_12C = 1.3e-6 / cell_volume_correction,
+    ThreePG_12C = 2.21e-4 / cell_volume_correction,
+    TwoPG_12C = 2.01e-5 / cell_volume_correction,
+    PEP_12C = 4.29e-5 / cell_volume_correction,
+    Pyruvate_12C = 6.77e-4 / cell_volume_correction,
+    Lactate_12C = 2.74e-3 / cell_volume_correction,
+    # Lactate_media_12C = 1e-3,
+    Lactate_media_12C = 0.0,
+    F26BP_12C = 0.0 / cell_volume_correction,
+    Citrate_12C = 0.0 / cell_volume_correction,
+    
+    Glucose_media_13C = tracing_13C_multiplier * 25e-3,
+    Glucose_13C = tracing_13C_multiplier * 6.12e-3 / cell_volume_correction,
+    G6P_13C = tracing_13C_multiplier * 1.73e-4 / cell_volume_correction,
+    F6P_13C = tracing_13C_multiplier * 8.17e-5 / cell_volume_correction,
+    F16BP_13C = tracing_13C_multiplier * 8.75e-4 / cell_volume_correction,
+    GAP_13C = tracing_13C_multiplier * 1.12e-4 / cell_volume_correction,
+    DHAP_13C = tracing_13C_multiplier * 7.19e-4 / cell_volume_correction,
+    BPG_13C = tracing_13C_multiplier * 1.3e-6 / cell_volume_correction,
+    ThreePG_13C = tracing_13C_multiplier * 2.21e-4 / cell_volume_correction,
+    TwoPG_13C = tracing_13C_multiplier * 2.01e-5 / cell_volume_correction,
+    PEP_13C = tracing_13C_multiplier * 4.29e-5 / cell_volume_correction,
+    Pyruvate_13C = tracing_13C_multiplier * 6.77e-4 / cell_volume_correction,
+    Lactate_13C = tracing_13C_multiplier * 2.74e-3 / cell_volume_correction,
+    # Lactate_media_13C = tracing_13C_multiplier * 1e-3,
+    Lactate_media_13C = 0.0,
+    F26BP_13C = tracing_13C_multiplier * 0.0 / cell_volume_correction,
+    Citrate_13C = tracing_13C_multiplier * 0.0 / cell_volume_correction,
+
+    ATP = 3.32e-3 / cell_volume_correction,
+    ADP = 3.96e-4 / cell_volume_correction,
+    AMP = 9.41e-5 / cell_volume_correction,
+    Phosphate = 1e-3 / cell_volume_correction,
+    NAD = 0.346e-3 / cell_volume_correction,
+    NADH = 3.58e-5 / cell_volume_correction,
+)
+
 
 #= Values of parameters with uncertainty
 Parameters have the following units:
