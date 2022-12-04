@@ -13,9 +13,13 @@ prob = ODEProblem(glycolysis_ODEs, glycolysis_init_conc, (0, 100), glycolysis_pa
 #Simulate glycolysis activity
 sol = solve(prob, Rodas4(), abstol = 1e-12, reltol = 1e-5)
 
+#List of all metabolites in the model can be founf by running
+propertynames(glycolysis_init_conc)
+
 #Plot all [Metabolite] over time
 fig = Figure()
 ax = Axis(fig[1, 1], yscale = log10, xlabel = "Time, min", ylabel = "[Metabolite], M")
+#Substitute :ATP, :ADP, :Phosphate for any metabolite(s) from propertynames(glycolysis_init_conc)
 for metabolite in [:ATP, :ADP, :Phosphate]
     lines!(ax, sol.t, sol[metabolite, :], label = String(metabolite))
 end
