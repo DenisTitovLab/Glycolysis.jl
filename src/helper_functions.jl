@@ -1,3 +1,5 @@
+using LabelledArrays
+
 function conc_to_disequilibrium_ratios(s, params)
     k = @LVector eltype(s) (
         :Q_Keq_GLUT,

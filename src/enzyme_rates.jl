@@ -1,3 +1,5 @@
+using LabelledArrays
+
 function conc_to_rates(s, params)
     r = @LVector eltype(s) (
         :GLUT,
