@@ -1,6 +1,5 @@
 module Glycolysis
 
-# Write your package code here.
 include("enzyme_rates.jl")
 include("ODEs.jl")
 include("model_parameters.jl")
