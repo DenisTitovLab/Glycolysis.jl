@@ -13,7 +13,7 @@ prob = ODEProblem(glycolysis_ODEs, glycolysis_init_conc, (0, 100), glycolysis_pa
 #Simulate glycolysis activity
 sol = solve(prob, Rodas4(), abstol = 1e-12, reltol = 1e-5)
 
-#List of all metabolites in the model can be founf by running
+#List of all metabolites in the model can be found by running
 propertynames(glycolysis_init_conc)
 
 #Plot all [Metabolite] over time
