@@ -1,7 +1,7 @@
 name = "Glycolysis"
 uuid = "1acb6d80-f93a-4117-912f-ae4c0dd090a6"
 authors = ["Denis-Titov <titov@berkeley.edu> and contributors"]
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 LabelledArrays = "2ee39098-c373-598a-b85f-a56591580800"
