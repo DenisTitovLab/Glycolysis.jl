@@ -1,3 +1,8 @@
+#=
+    This file contains functions that take M concentrations of glycolytic metabolites as input and
+    and generate rates of glycolytic reactions in M/s
+=#
+
 using LabelledArrays
 
 function conc_to_rates(s, params)
@@ -42,6 +47,22 @@ function conc_to_rates(s, params)
     return r
 end
 
+"""
+    rate_GLUT(Glucose_media, Glucose, params)
+
+Calculate rate (M/s units) of GLUT transporter from concentrations (M units) of `Glucose_media` and `Glucose`
+
+# Arguments
+- `params::LArray`: kinetic parameters of GLUT. Glycolysis.jl exports LArray `glycolysis_params` that contains kinetic parameters of all glycolytic enzymes. 
+
+# Example
+```julia-repl
+julia> Glucose_media, Glucose = 25e-3, 8e-3
+(0.025, 0.008)
+julia> Glycolysis.rate_GLUT(Glucose_media, Glucose, glycolysis_params)
+0.02267962645321136
+```
+"""
 function rate_GLUT(Glucose_media, Glucose, params)
     Rate = (
         (params.GLUT_Vmax * params.GLUT_Conc / params.GLUT_Km_Glucose) *
@@ -52,7 +73,6 @@ function rate_GLUT(Glucose_media, Glucose, params)
 end
 
 function rate_HK1(Glucose, G6P, ATP, ADP, Phosphate, params)
-
     Z = (
         (
             1 +
