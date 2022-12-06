@@ -1,11 +1,14 @@
-using LabelledArrays, Measurements
 #=
-To do list
+This file contains all the parameters needed to run Glycolysis.jl
 
-- add Km for products for PFKP and PKM2
-- rename params to something else as it conflicts with too many other library params
+All parameters are estimated from experimental data and many are in the form of Mean ± SEM
 
+Parameters include kinetic constants, thermodynamic constants, enzyme concentrations, initial 
+conditions for ODE simulations (i.e., estimates of intracellular concentration of metabolites),
+and various constant for unit convertions.
 =#
+
+using LabelledArrays, Measurements
 
 # Define cellular parameters and kinetic+thermodynamic constants of enzymes
 water_fraction_cell_volume = 0.66
@@ -54,11 +57,9 @@ glycolysis_13C_tracing_init_conc = LVector(
     PEP_12C = 4.29e-5 / cell_volume_correction,
     Pyruvate_12C = 6.77e-4 / cell_volume_correction,
     Lactate_12C = 2.74e-3 / cell_volume_correction,
-    # Lactate_media_12C = 1e-3,
     Lactate_media_12C = 0.0,
     F26BP_12C = 0.0 / cell_volume_correction,
     Citrate_12C = 0.0 / cell_volume_correction,
-    
     Glucose_media_13C = tracing_13C_multiplier * 25e-3,
     Glucose_13C = tracing_13C_multiplier * 6.12e-3 / cell_volume_correction,
     G6P_13C = tracing_13C_multiplier * 1.73e-4 / cell_volume_correction,
@@ -72,11 +73,9 @@ glycolysis_13C_tracing_init_conc = LVector(
     PEP_13C = tracing_13C_multiplier * 4.29e-5 / cell_volume_correction,
     Pyruvate_13C = tracing_13C_multiplier * 6.77e-4 / cell_volume_correction,
     Lactate_13C = tracing_13C_multiplier * 2.74e-3 / cell_volume_correction,
-    # Lactate_media_13C = tracing_13C_multiplier * 1e-3,
-    Lactate_media_13C = 0.0,
+    Lactate_media_13C = tracing_13C_multiplier * 0.0,
     F26BP_13C = tracing_13C_multiplier * 0.0 / cell_volume_correction,
     Citrate_13C = tracing_13C_multiplier * 0.0 / cell_volume_correction,
-
     ATP = 3.32e-3 / cell_volume_correction,
     ADP = 3.96e-4 / cell_volume_correction,
     AMP = 9.41e-5 / cell_volume_correction,
@@ -166,11 +165,6 @@ glycolysis_params_w_uncertainty = LVector(
     GAPDH_Vmax = 130 ± 20,
     GAPDH_Keq = 16 ± 5,
     GAPDH_MW = 36053.0 / 1000,
-
-    # Below GAPDH constants to be removed after adjusting bound equations
-    GAPDH_Km_Phosphate = 7.1e-4, #Km, M
-    GAPDH_Km_NAD = 0.047e-3, #Km, M
-    GAPDH_Km_NADH = 0.01e-3, #Km, M
     PGK_K_BPG = 3e-6 ± 0.7e-6,
     PGK_K_ADP = 42e-6 ± 10e-6,
     PGK_K_ThreePG = 660e-6 ± 220e-6,
