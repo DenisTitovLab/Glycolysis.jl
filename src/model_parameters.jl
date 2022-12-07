@@ -1,11 +1,11 @@
 #=
-This file contains all the parameters needed to run Glycolysis.jl
-
-All parameters are estimated from experimental data and many are in the form of Mean ± SEM
-
-Parameters include kinetic constants, thermodynamic constants, enzyme concentrations, initial 
+This file contains all the parameters needed to run Glycolysis.jl including
+kinetic constants, thermodynamic constants, enzyme concentrations, initial 
 conditions for ODE simulations (i.e., estimates of intracellular concentration of metabolites),
-and various constant for unit convertions.
+and various constants for unit convertions.
+
+Parameters are estimated from experimental data and many are in the form of Mean ± SEM
+ 
 =#
 
 using LabelledArrays, Measurements
@@ -17,6 +17,12 @@ cell_volume_correction = water_fraction_cell_volume * cytosol_fraction_cell_volu
 cell_protein_density = 0.2 #mg/ul
 
 # Define initial concentrations of metabolites for model simulations
+"""
+Intracellular concentrations of glycolytic intermediates in mammalian cells (M units).
+`glycolysis_init_conc` can be used as initial condition for simulating glycolysis ODEs model.
+Values are corrected for protein concentration and cytosol fraction to better represent
+metabolite concentration in cytosol.
+"""
 glycolysis_init_conc = LVector(
     Glucose_media = 25e-3,
     Glucose = 6.12e-3 / cell_volume_correction,
