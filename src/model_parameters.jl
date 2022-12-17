@@ -109,7 +109,7 @@ glycolysis_13C_tracing_init_conc = LVector(
 #= Values of parameters with uncertainty
 Parameters have the following units:
 K - M
-Vmax - umole/min per mg protein or U per mg
+Vmax - µmol/min per mg protein or U per mg
 Conc - mg protein/ul of cytosolic volume (converted from mg protein/mg proteome)
 Conc⋅Vmax - M/min
 Keq - either unitless or concentration
@@ -128,7 +128,7 @@ as "EnzymeGeneName_ParameterName".
     Parameters have the following units:  
     K - M  
     β - unitless  
-    Vmax - umole/min per mg protein or U per mg  
+    Vmax - µmol/min per mg protein or U per mg  
     Keq - depends on reaction stoichiometry  
     Conc - mg protein/ul of cytosolic volume (converted from mg protein/mg proteome)  
     Conc⋅Vmax - M/min  
@@ -239,9 +239,9 @@ glycolysis_params_w_uncertainty = LVector(
     #PKM2_i_KdF16BP = Inf,  #Kd of PKM2 inactive form for allosteric activator F16BP, M
     PKM2_i_KdATP = 4.26282043e-04,  #Kd of PKM2 active form for inhibitor ATP, M
     PKM2_Conc = (cell_protein_density / cell_volume_correction) * (7.5e-3 ± 1.0e-3), #Enzyme abundance in mg enzyme per ul cellular protein
-    PKM2_a_Vmax = 220.0,  #Max forward rate of active PKM2 form enzyme, M/min OR umole/min per ul of cell volume
-    PKM2_i_Vmax = 220.0,  #Max forward rate of inactive PKM2 form enzyme, M/min OR umole/min per ul of cell volume
-    PKM2_Vmax = 220.0,  #Max forward rate of active PKM2 form enzyme, M/min OR umole/min per ul of cell volume
+    PKM2_a_Vmax = 220.0,  #Max forward rate of active PKM2 form enzyme, M/min OR µmol/min per ul of cell volume
+    PKM2_i_Vmax = 220.0,  #Max forward rate of inactive PKM2 form enzyme, M/min OR µmol/min per ul of cell volume
+    PKM2_Vmax = 220.0,  #Max forward rate of active PKM2 form enzyme, M/min OR µmol/min per ul of cell volume
     PKM2_n = 4.0,
     PKM2_Keq = 31000.0,
     PKM2_MW = 57937.0 / 1000,
@@ -281,7 +281,7 @@ as "EnzymeGeneName_ParameterName".
     Parameters have the following units:  
     K - M  
     β - unitless  
-    Vmax - umole/min per mg protein or U per mg  
+    Vmax - µmol/min per mg protein or U per mg  
     Keq - depends on reaction stoichiometry  
     Conc - mg protein/ul of cytosolic volume (converted from mg protein/mg proteome)  
     Conc⋅Vmax - M/min  
@@ -298,7 +298,7 @@ as "EnzymeGeneName_ParameterName".
     Parameters have the following units:  
     K - M  
     β - unitless  
-    Vmax - umole/min per mg protein or U per mg  
+    Vmax - µmol/min per mg protein or U per mg  
     Keq - depends on reaction stoichiometry  
     Conc - mg protein/ul of cytosolic volume (converted from mg protein/mg proteome)  
     Conc⋅Vmax - M/min  
