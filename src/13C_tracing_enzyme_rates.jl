@@ -176,38 +176,77 @@ function rate_13C_ENO(TwoPG_13C, PEP_13C, TwoPG, PEP, params)
     return Rate
 end
 
-function rate_13C_PKM2(PEP_13C, Pyruvate_13C, PEP, ADP, F16BP, ATP, Pyruvate, params)
-    Z = (
-        ((1 + PEP / params.PKM2_a_KmPEP)^params.PKM2_n) *
-        ((1 + ADP / params.PKM2_a_KmADP + ATP / params.PKM2_a_KdATP)^params.PKM2_n) *
-        ((1 + F16BP / params.PKM2_a_KdF16BP)^params.PKM2_n) +
-        params.PKM2_L *
-        ((1 + PEP / params.PKM2_i_KmPEP)^params.PKM2_n) *
-        ((1 + ADP / params.PKM2_i_KmADP + ATP / params.PKM2_i_KdATP)^params.PKM2_n) *
-        ((1 + F16BP / params.PKM2_i_KdF16BP)^params.PKM2_n)
+# function rate_13C_PKM2(PEP_13C, Pyruvate_13C, PEP, ADP, F16BP, ATP, Pyruvate, params)
+#     Z = (
+#         ((1 + PEP / params.PKM2_a_KmPEP)^params.PKM2_n) *
+#         ((1 + ADP / params.PKM2_a_KmADP + ATP / params.PKM2_a_KdATP)^params.PKM2_n) *
+#         ((1 + F16BP / params.PKM2_a_KdF16BP)^params.PKM2_n) +
+#         params.PKM2_L *
+#         ((1 + PEP / params.PKM2_i_KmPEP)^params.PKM2_n) *
+#         ((1 + ADP / params.PKM2_i_KmADP + ATP / params.PKM2_i_KdATP)^params.PKM2_n) *
+#         ((1 + F16BP / params.PKM2_i_KdF16BP)^params.PKM2_n)
+#     )
+#     Pa = (
+#         params.PKM2_n *
+#         (1 / params.PKM2_a_KmPEP) *
+#         (1 / params.PKM2_a_KmADP) *
+#         ((1 + PEP / params.PKM2_a_KmPEP)^(params.PKM2_n - 1)) *
+#         ((1 + ADP / params.PKM2_a_KmADP + ATP / params.PKM2_a_KdATP)^(params.PKM2_n - 1)) *
+#         ((1 + F16BP / params.PKM2_a_KdF16BP)^params.PKM2_n) / Z
+#     )
+#     Pi = (
+#         params.PKM2_n *
+#         params.PKM2_L *
+#         (1 / params.PKM2_i_KmPEP) *
+#         (1 / params.PKM2_i_KmADP) *
+#         ((1 + PEP / params.PKM2_i_KmPEP)^(params.PKM2_n - 1)) *
+#         ((1 + ADP / params.PKM2_i_KmADP + ATP / params.PKM2_i_KdATP)^(params.PKM2_n - 1)) *
+#         ((1 + F16BP / params.PKM2_i_KdF16BP)^params.PKM2_n) / Z
+#     )
+#     Rate = (
+#         (1 / params.PKM2_n) *
+#         (params.PKM2_a_Vmax * params.PKM2_Conc * Pa + params.PKM2_i_Vmax * params.PKM2_Conc * Pi) *
+#         (ADP * PEP_13C - ATP * Pyruvate_13C / params.PKM2_Keq)
+#     )
+#     return Rate
+# end
+
+function rate_13C_PKM2(PEP_13C, Pyruvate_13C, PEP, ADP, Pyruvate, ATP, F16BP, Phenylalanine, params)
+    Z_a_cat = (
+        1 +
+        (PEP / params.PKM2_K_a_PEP) +
+        (ATP / params.PKM2_K_ATP) +
+        (ADP / params.PKM2_K_ADP) +
+        (PEP / params.PKM2_K_a_PEP) * (ADP / params.PKM2_K_ADP) +
+        (Pyruvate / params.PKM2_K_Pyruvate) * (ATP / params.PKM2_K_ATP) +
+        (PEP / params.PKM2_K_a_PEP) * (ATP / params.PKM2_K_ATP) +
+        (Pyruvate / params.PKM2_K_Pyruvate) * (ADP / params.PKM2_K_ADP)
     )
-    Pa = (
-        params.PKM2_n *
-        (1 / params.PKM2_a_KmPEP) *
-        (1 / params.PKM2_a_KmADP) *
-        ((1 + PEP / params.PKM2_a_KmPEP)^(params.PKM2_n - 1)) *
-        ((1 + ADP / params.PKM2_a_KmADP + ATP / params.PKM2_a_KdATP)^(params.PKM2_n - 1)) *
-        ((1 + F16BP / params.PKM2_a_KdF16BP)^params.PKM2_n) / Z
+    Z_i_cat = (
+        1 +
+        (PEP / params.PKM2_K_i_PEP) +
+        (ATP / params.PKM2_K_ATP) +
+        (ADP / params.PKM2_K_ADP) +
+        (PEP / params.PKM2_K_i_PEP) * (ADP / params.PKM2_K_ADP) +
+        (Pyruvate / params.PKM2_K_Pyruvate) * (ATP / params.PKM2_K_ATP) +
+        params.PKM2_β_i_PEP_ATP * (PEP / params.PKM2_K_i_PEP) * (ATP / params.PKM2_K_ATP) +
+        (Pyruvate / params.PKM2_K_Pyruvate) * (ADP / params.PKM2_K_ADP)
     )
-    Pi = (
-        params.PKM2_n *
-        params.PKM2_L *
-        (1 / params.PKM2_i_KmPEP) *
-        (1 / params.PKM2_i_KmADP) *
-        ((1 + PEP / params.PKM2_i_KmPEP)^(params.PKM2_n - 1)) *
-        ((1 + ADP / params.PKM2_i_KmADP + ATP / params.PKM2_i_KdATP)^(params.PKM2_n - 1)) *
-        ((1 + F16BP / params.PKM2_i_KdF16BP)^params.PKM2_n) / Z
-    )
-    Rate = (
-        (1 / params.PKM2_n) *
-        (params.PKM2_a_Vmax * params.PKM2_Conc * Pa + params.PKM2_i_Vmax * params.PKM2_Conc * Pi) *
-        (ADP * PEP_13C - ATP * Pyruvate_13C / params.PKM2_Keq)
-    )
+    Z_a_reg = ((1 + F16BP / params.PKM2_K_a_F16BP) * (1 + Phenylalanine / params.PKM2_K_a_Phenylalanine))
+    Z_i_reg = (1 + Phenylalanine / params.PKM2_K_i_Phenylalanine)
+
+    Rate =
+        params.PKM2_Conc *
+        (ADP * PEP_13C - ATP * Pyruvate_13C / params.PKM2_Keq) *
+        (
+            (params.PKM2_Vmax_a * (1.0 / params.PKM2_K_a_PEP) * (1.0 / params.PKM2_K_ADP)) *
+            (Z_a_cat^3) *
+            (Z_a_reg^4) +
+            params.PKM2_L *
+            (params.PKM2_Vmax_i * (1.0 / params.PKM2_K_i_PEP) * (1.0 / params.PKM2_K_ADP)) *
+            (Z_i_cat^3) *
+            (Z_i_reg^4)
+        ) / ((Z_a_cat^4) * (Z_a_reg^4) + params.PKM2_L * (Z_i_cat^4) * (Z_i_reg^4))
     return Rate
 end
 

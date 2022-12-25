@@ -33,14 +33,14 @@ function conc_to_rates(s, params)
     r.PGK = rate_PGK(s.BPG, s.ADP, s.ATP, s.ThreePG, params)
     r.PGM = rate_PGM(s.ThreePG, s.TwoPG, params)
     r.ENO = rate_ENO(s.TwoPG, s.PEP, params)
-    r.PKM2 = rate_PKM2(s.PEP, s.ADP, s.F16BP, s.ATP, s.Pyruvate, params)
+    r.PKM2 = rate_PKM2(s.PEP, s.ADP, s.Pyruvate, s.ATP, s.F16BP, s.Phenylalanine, params)
     r.LDH = rate_LDH(s.Pyruvate, s.NADH, s.NAD, s.Lactate, params)
     r.MCT = rate_MCT(s.Lactate, s.Lactate_media, params)
     r.ATPprod = (
         -rate_HK1(s.Glucose, s.G6P, s.ATP, s.Phosphate, s.ADP, params) -
         rate_PFKP(s.F6P, s.ATP, s.F16BP, s.ADP, s.Phosphate, s.Citrate, s.F26BP, params) +
         rate_PGK(s.BPG, s.ADP, s.ATP, s.ThreePG, params) +
-        rate_PKM2(s.PEP, s.ADP, s.F16BP, s.ATP, s.Pyruvate, params) +
+        rate_PKM2(s.PEP, s.ADP, s.Pyruvate, s.ATP, s.F16BP, s.Phenylalanine, params) +
         rate_AK(s.ATP, s.ADP, s.AMP, params)
     )
     r.ATPase = rate_ATPase(s.ATP, s.ADP, s.Phosphate, params)
@@ -48,7 +48,7 @@ function conc_to_rates(s, params)
 end
 
 """
-    rate_GLUT(Glucose_media, Glucose, params)
+    rate_GLUT(Glucose_media, Glucose, glycolysis_params)
 
 Calculate rate (M/s units) of GLUT transporter from concentrations (M units) of `Glucose_media` and `Glucose`
 
@@ -241,38 +241,83 @@ function rate_ENO(TwoPG, PEP, params)
     return Rate
 end
 
-function rate_PKM2(PEP, ADP, F16BP, ATP, Pyruvate, params)
-    Z = (
-        ((1 + PEP / params.PKM2_a_KmPEP)^4) *
-        ((1 + ADP / params.PKM2_a_KmADP + ATP / params.PKM2_a_KdATP)^4) *
-        ((1 + F16BP / params.PKM2_a_KdF16BP)^4) +
-        params.PKM2_L *
-        ((1 + PEP / params.PKM2_i_KmPEP)^4) *
-        ((1 + ADP / params.PKM2_i_KmADP + ATP / params.PKM2_i_KdATP)^4) *
-        ((1 + F16BP / params.PKM2_i_KdF16BP)^4)
+# function rate_PKM2(PEP, ADP, F16BP, ATP, Pyruvate, params)
+#     Z = (
+#         ((1 + PEP / params.PKM2_a_KmPEP)^4) *
+#         ((1 + ADP / params.PKM2_a_KmADP + ATP / params.PKM2_a_KdATP)^4) *
+#         ((1 + F16BP / params.PKM2_a_KdF16BP)^4) +
+#         params.PKM2_L *
+#         ((1 + PEP / params.PKM2_i_KmPEP)^4) *
+#         ((1 + ADP / params.PKM2_i_KmADP + ATP / params.PKM2_i_KdATP)^4) *
+#         ((1 + F16BP / params.PKM2_i_KdF16BP)^4)
+#     )
+#     Pa = (
+#         4 *
+#         (1 / params.PKM2_a_KmPEP) *
+#         (1 / params.PKM2_a_KmADP) *
+#         ((1 + PEP / params.PKM2_a_KmPEP)^(4 - 1)) *
+#         ((1 + ADP / params.PKM2_a_KmADP + ATP / params.PKM2_a_KdATP)^(4 - 1)) *
+#         ((1 + F16BP / params.PKM2_a_KdF16BP)^4) / Z
+#     )
+#     Pi = (
+#         4 *
+#         params.PKM2_L *
+#         (1 / params.PKM2_i_KmPEP) *
+#         (1 / params.PKM2_i_KmADP) *
+#         ((1 + PEP / params.PKM2_i_KmPEP)^(4 - 1)) *
+#         ((1 + ADP / params.PKM2_i_KmADP + ATP / params.PKM2_i_KdATP)^(4 - 1)) *
+#         ((1 + F16BP / params.PKM2_i_KdF16BP)^4) / Z
+#     )
+#     Rate = (
+#         (1 / 4) *
+#         (params.PKM2_a_Vmax * params.PKM2_Conc * Pa + params.PKM2_i_Vmax * params.PKM2_Conc * Pi) *
+#         (ADP * PEP - ATP * Pyruvate / params.PKM2_Keq)
+#     )
+#     return Rate
+# end
+
+function rate_PKM2(PEP, ADP, Pyruvate, ATP, F16BP, Phenylalanine, params)
+
+    Z_a_cat = (
+        1 +
+        (PEP / params.PKM2_K_a_PEP) +
+        (ATP / params.PKM2_K_ATP) +
+        (ADP / params.PKM2_K_ADP) +
+        (PEP / params.PKM2_K_a_PEP) * (ADP / params.PKM2_K_ADP) +
+        (Pyruvate / params.PKM2_K_Pyruvate) * (ATP / params.PKM2_K_ATP) +
+        (PEP / params.PKM2_K_a_PEP) * (ATP / params.PKM2_K_ATP) +
+        (Pyruvate / params.PKM2_K_Pyruvate) * (ADP / params.PKM2_K_ADP)
     )
-    Pa = (
-        4 *
-        (1 / params.PKM2_a_KmPEP) *
-        (1 / params.PKM2_a_KmADP) *
-        ((1 + PEP / params.PKM2_a_KmPEP)^(4 - 1)) *
-        ((1 + ADP / params.PKM2_a_KmADP + ATP / params.PKM2_a_KdATP)^(4 - 1)) *
-        ((1 + F16BP / params.PKM2_a_KdF16BP)^4) / Z
+    Z_i_cat = (
+        1 +
+        (PEP / params.PKM2_K_i_PEP) +
+        (ATP / params.PKM2_K_ATP) +
+        (ADP / params.PKM2_K_ADP) +
+        (PEP / params.PKM2_K_i_PEP) * (ADP / params.PKM2_K_ADP) +
+        (Pyruvate / params.PKM2_K_Pyruvate) * (ATP / params.PKM2_K_ATP) +
+        params.PKM2_β_i_PEP_ATP * (PEP / params.PKM2_K_i_PEP) * (ATP / params.PKM2_K_ATP) +
+        (Pyruvate / params.PKM2_K_Pyruvate) * (ADP / params.PKM2_K_ADP)
     )
-    Pi = (
-        4 *
-        params.PKM2_L *
-        (1 / params.PKM2_i_KmPEP) *
-        (1 / params.PKM2_i_KmADP) *
-        ((1 + PEP / params.PKM2_i_KmPEP)^(4 - 1)) *
-        ((1 + ADP / params.PKM2_i_KmADP + ATP / params.PKM2_i_KdATP)^(4 - 1)) *
-        ((1 + F16BP / params.PKM2_i_KdF16BP)^4) / Z
-    )
-    Rate = (
-        (1 / 4) *
-        (params.PKM2_a_Vmax * params.PKM2_Conc * Pa + params.PKM2_i_Vmax * params.PKM2_Conc * Pi) *
-        (ADP * PEP - ATP * Pyruvate / params.PKM2_Keq)
-    )
+    Z_a_reg = ((1 + F16BP / params.PKM2_K_a_F16BP) * (1 + Phenylalanine / params.PKM2_K_a_Phenylalanine))
+    Z_i_reg = (1 + Phenylalanine / params.PKM2_K_i_Phenylalanine)
+
+    Rate =
+        params.PKM2_Conc *
+        (ADP * PEP - ATP * Pyruvate / params.PKM2_Keq) *
+        (
+            (
+                params.PKM2_Vmax_a * (1.0 / params.PKM2_K_a_PEP) * (1.0 / params.PKM2_K_ADP)
+            ) *
+            (Z_a_cat^3) *
+            (Z_a_reg^4) +
+            params.PKM2_L *
+            (
+                params.PKM2_Vmax_i * (1.0 / params.PKM2_K_i_PEP) * (1.0 / params.PKM2_K_ADP)
+            ) *
+            (Z_i_cat^3) *
+            (Z_i_reg^4)
+        ) / ((Z_a_cat^4) * (Z_a_reg^4) + params.PKM2_L * (Z_i_cat^4) * (Z_i_reg^4))
+
     return Rate
 end
 
