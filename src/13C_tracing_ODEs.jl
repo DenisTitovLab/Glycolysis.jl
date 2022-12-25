@@ -21,8 +21,9 @@ function glycolysis_13C_tracing_ODEs(ds, s, params, t)
     NADH = s.NADH
     Citrate = s.Citrate_12C + s.Citrate_13C
     F26BP = s.F26BP_12C + s.F26BP_13C
+    Phenylalanine = s.Phenylalanine_12C + s.Phenylalanine_13C
 
-    ds.Glucose_media_12C = 0
+    ds.Glucose_media_12C = 0.0
     ds.Glucose_12C =
         rate_13C_GLUT(s.Glucose_media_12C, s.Glucose_12C, Glucose_media, Glucose, params) -
         rate_13C_HK1(s.Glucose_12C, s.G6P_12C, Glucose, G6P, ATP, Phosphate, ADP, params)
@@ -56,18 +57,19 @@ function glycolysis_13C_tracing_ODEs(ds, s, params, t)
         rate_13C_ENO(s.TwoPG_12C, s.PEP_12C, TwoPG, PEP, params)
     ds.PEP_12C =
         rate_13C_ENO(s.TwoPG_12C, s.PEP_12C, TwoPG, PEP, params) -
-        rate_13C_PKM2(s.PEP_12C, s.Pyruvate_12C, PEP, ADP, F16BP, ATP, Pyruvate, params)
+        rate_13C_PKM2(s.PEP_12C, s.Pyruvate_12C, PEP, ADP, Pyruvate, ATP, F16BP, Phenylalanine, params)
     ds.Pyruvate_12C =
-        rate_13C_PKM2(s.PEP_12C, s.Pyruvate_12C, PEP, ADP, F16BP, ATP, Pyruvate, params) -
+        rate_13C_PKM2(s.PEP_12C, s.Pyruvate_12C, PEP, ADP, Pyruvate, ATP, F16BP, Phenylalanine, params) -
         rate_13C_LDH(s.Pyruvate_12C, s.Lactate_12C, Pyruvate, NADH, NAD, Lactate, params)
     ds.Lactate_12C =
         rate_13C_LDH(s.Pyruvate_12C, s.Lactate_12C, Pyruvate, NADH, NAD, Lactate, params) -
         rate_13C_MCT(s.Lactate_12C, s.Lactate_media_12C, Lactate, Lactate_media, params)
-    ds.Lactate_media_12C = 0
-    ds.F26BP_12C = 0
-    ds.Citrate_12C = 0
+    ds.Lactate_media_12C = 0.0
+    ds.F26BP_12C = 0.0
+    ds.Citrate_12C = 0.0
+    ds.Phenylalanine_12C = 0.0
 
-    ds.Glucose_media_13C = 0
+    ds.Glucose_media_13C = 0.0
     ds.Glucose_13C =
         rate_13C_GLUT(s.Glucose_media_13C, s.Glucose_13C, Glucose_media, Glucose, params) -
         rate_13C_HK1(s.Glucose_13C, s.G6P_13C, Glucose, G6P, ATP, Phosphate, ADP, params)
@@ -101,28 +103,30 @@ function glycolysis_13C_tracing_ODEs(ds, s, params, t)
         rate_13C_ENO(s.TwoPG_13C, s.PEP_13C, TwoPG, PEP, params)
     ds.PEP_13C =
         rate_13C_ENO(s.TwoPG_13C, s.PEP_13C, TwoPG, PEP, params) -
-        rate_13C_PKM2(s.PEP_13C, s.Pyruvate_13C, PEP, ADP, F16BP, ATP, Pyruvate, params)
+        rate_13C_PKM2(s.PEP_13C, s.Pyruvate_13C, PEP, ADP, Pyruvate, ATP, F16BP, Phenylalanine, params)
     ds.Pyruvate_13C =
-        rate_13C_PKM2(s.PEP_13C, s.Pyruvate_13C, PEP, ADP, F16BP, ATP, Pyruvate, params) -
+        rate_13C_PKM2(s.PEP_13C, s.Pyruvate_13C, PEP, ADP, Pyruvate, ATP, F16BP, Phenylalanine, params) -
         rate_13C_LDH(s.Pyruvate_13C, s.Lactate_13C, Pyruvate, NADH, NAD, Lactate, params)
     ds.Lactate_13C =
         rate_13C_LDH(s.Pyruvate_13C, s.Lactate_13C, Pyruvate, NADH, NAD, Lactate, params) -
         rate_13C_MCT(s.Lactate_13C, s.Lactate_media_13C, Lactate, Lactate_media, params)
-    ds.Lactate_media_13C = 0
-    ds.F26BP_13C = 0
-    ds.Citrate_13C = 0
+    ds.Lactate_media_13C = 0.0
+    ds.F26BP_13C = 0.0
+    ds.Citrate_13C = 0.0
+    ds.Phenylalanine_13C = 0.0
 
     ds.ATP = (
         -rate_HK1(Glucose, G6P, ATP, ADP, Phosphate, params) -
         rate_PFKP(F6P, ATP, F16BP, ADP, Phosphate, Citrate, F26BP, params) +
         rate_PGK(BPG, ADP, ATP, ThreePG, params) +
-        rate_PKM2(PEP, ADP, F16BP, ATP, Pyruvate, params) - rate_ATPase(ATP, ADP, Phosphate, params) +
-        rate_AK(ATP, ADP, AMP, params)
+        rate_PKM2(PEP, ADP, Pyruvate, ATP, F16BP, Phenylalanine, params) -
+        rate_ATPase(ATP, ADP, Phosphate, params) + rate_AK(ATP, ADP, AMP, params)
     )
     ds.ADP = (
         rate_HK1(Glucose, G6P, ATP, ADP, Phosphate, params) +
         rate_PFKP(F6P, ATP, F16BP, ADP, Phosphate, Citrate, F26BP, params) -
-        rate_PGK(BPG, ADP, ATP, ThreePG, params) - rate_PKM2(PEP, ADP, F16BP, ATP, Pyruvate, params) +
+        rate_PGK(BPG, ADP, ATP, ThreePG, params) -
+        rate_PKM2(PEP, ADP, Pyruvate, ATP, F16BP, Phenylalanine, params) +
         rate_ATPase(ATP, ADP, Phosphate, params) - 2 * rate_AK(ATP, ADP, AMP, params)
     )
     ds.AMP = rate_AK(ATP, ADP, AMP, params)

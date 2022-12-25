@@ -16,7 +16,7 @@ function free_to_total_conc(f, params)
     b.F16BP = (
         binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).F16BP +
         binding_ALDO(f.F16BP, f.GAP, f.DHAP, params).F16BP +
-        binding_PKM2(f.PEP, f.ADP, f.F16BP, f.ATP, params).F16BP
+        binding_PKM2(f.PEP, f.ADP, f.Pyruvate, f.ATP, f.F16BP, f.Phenylalanine, params).F16BP
     )
     b.GAP = (
         binding_ALDO(f.F16BP, f.GAP, f.DHAP, params).GAP +
@@ -33,21 +33,21 @@ function free_to_total_conc(f, params)
         binding_PGM(f.ThreePG, f.TwoPG, params).ThreePG
     )
     b.TwoPG = (binding_PGM(f.ThreePG, f.TwoPG, params).TwoPG + binding_ENO(f.TwoPG, f.PEP, params).TwoPG)
-    b.PEP = (binding_ENO(f.TwoPG, f.PEP, params).PEP + binding_PKM2(f.PEP, f.ADP, f.F16BP, f.ATP, params).PEP)
-    b.Pyruvate = 0.0
+    b.PEP = (binding_ENO(f.TwoPG, f.PEP, params).PEP + binding_PKM2(f.PEP, f.ADP, f.Pyruvate, f.ATP, f.F16BP, f.Phenylalanine, params).PEP)
+    b.Pyruvate = binding_PKM2(f.PEP, f.ADP, f.Pyruvate, f.ATP, f.F16BP, f.Phenylalanine, params).Pyruvate
     b.Lactate = binding_MCT(f.Lactate, f.Lactate_media, params).Lactate
     b.Lactate_media = 0.0
     b.ATP = (
         binding_HK1(f.Glucose, f.G6P, f.ATP, f.ADP, f.Phosphate, params).ATP +
         binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).ATP +
         binding_PGK(f.BPG, f.ADP, f.ATP, f.ThreePG, params).ATP +
-        binding_PKM2(f.PEP, f.ADP, f.F16BP, f.ATP, params).ATP
+        binding_PKM2(f.PEP, f.ADP, f.Pyruvate, f.ATP, f.F16BP, f.Phenylalanine, params).ATP
     )
     b.ADP = (
         binding_HK1(f.Glucose, f.G6P, f.ATP, f.ADP, f.Phosphate, params).ADP +
         binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).ADP +
         binding_PGK(f.BPG, f.ADP, f.ATP, f.ThreePG, params).ADP +
-        binding_PKM2(f.PEP, f.ADP, f.F16BP, f.ATP, params).ADP
+        binding_PKM2(f.PEP, f.ADP, f.Pyruvate, f.ATP, f.F16BP, f.Phenylalanine, params).ADP
     )
     b.AMP = 0
     b.Phosphate = (
@@ -65,6 +65,7 @@ function free_to_total_conc(f, params)
     )
     b.F26BP = (binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).F26BP)
     b.Citrate = (binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).Citrate)
+    b.Phenylalanine = (binding_PKM2(f.PEP, f.ADP, f.Pyruvate, f.ATP, f.F16BP, f.Phenylalanine, params).Phenylalanine)
     return (b + f) .* cell_volume_correction
 end
 
@@ -86,7 +87,7 @@ function free_to_bound_conc(f, params)
     b.F16BP = (
         binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).F16BP +
         binding_ALDO(f.F16BP, f.GAP, f.DHAP, params).F16BP +
-        binding_PKM2(f.PEP, f.ADP, f.F16BP, f.ATP, params).F16BP
+        binding_PKM2(f.PEP, f.ADP, f.Pyruvate, f.ATP, f.F16BP, f.Phenylalanine, params).F16BP
     )
     b.GAP = (
         binding_ALDO(f.F16BP, f.GAP, f.DHAP, params).GAP +
@@ -103,21 +104,21 @@ function free_to_bound_conc(f, params)
         binding_PGM(f.ThreePG, f.TwoPG, params).ThreePG
     )
     b.TwoPG = (binding_PGM(f.ThreePG, f.TwoPG, params).TwoPG + binding_ENO(f.TwoPG, f.PEP, params).TwoPG)
-    b.PEP = (binding_ENO(f.TwoPG, f.PEP, params).PEP + binding_PKM2(f.PEP, f.ADP, f.F16BP, f.ATP, params).PEP)
-    b.Pyruvate = 0.0
+    b.PEP = (binding_ENO(f.TwoPG, f.PEP, params).PEP + binding_PKM2(f.PEP, f.ADP, f.Pyruvate, f.ATP, f.F16BP, f.Phenylalanine, params).PEP)
+    b.Pyruvate = binding_PKM2(f.PEP, f.ADP, f.Pyruvate, f.ATP, f.F16BP, f.Phenylalanine, params).Pyruvate
     b.Lactate = binding_MCT(f.Lactate, f.Lactate_media, params).Lactate
     b.Lactate_media = 0.0
     b.ATP = (
         binding_HK1(f.Glucose, f.G6P, f.ATP, f.ADP, f.Phosphate, params).ATP +
         binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).ATP +
         binding_PGK(f.BPG, f.ADP, f.ATP, f.ThreePG, params).ATP +
-        binding_PKM2(f.PEP, f.ADP, f.F16BP, f.ATP, params).ATP
+        binding_PKM2(f.PEP, f.ADP, f.Pyruvate, f.ATP, f.F16BP, f.Phenylalanine, params).ATP
     )
     b.ADP = (
         binding_HK1(f.Glucose, f.G6P, f.ATP, f.ADP, f.Phosphate, params).ADP +
         binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).ADP +
         binding_PGK(f.BPG, f.ADP, f.ATP, f.ThreePG, params).ADP +
-        binding_PKM2(f.PEP, f.ADP, f.F16BP, f.ATP, params).ADP
+        binding_PKM2(f.PEP, f.ADP, f.Pyruvate, f.ATP, f.F16BP, f.Phenylalanine, params).ADP
     )
     b.AMP = 0.0
     b.Phosphate = (
@@ -135,6 +136,7 @@ function free_to_bound_conc(f, params)
     )
     b.F26BP = (binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).F26BP)
     b.Citrate = (binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).Citrate)
+    b.Phenylalanine = (binding_PKM2(f.PEP, f.ADP, f.Pyruvate, f.ATP, f.F16BP, f.Phenylalanine, params).Phenylalanine)
     return b
 end
 
@@ -532,54 +534,160 @@ function binding_ENO(TwoPG, PEP, params)
     return (TwoPG = TwoPG_bound, PEP = PEP_bound)
 end
 
-function binding_PKM2(PEP, ADP, F16BP, ATP, params)
-    Z = (
-        ((1 + PEP / params.PKM2_a_KmPEP)^params.PKM2_n) *
-        ((1 + ADP / params.PKM2_a_KmADP + ATP / params.PKM2_a_KdATP)^params.PKM2_n) *
-        ((1 + F16BP / params.PKM2_a_KdF16BP)^params.PKM2_n) +
-        params.PKM2_L *
-        ((1 + PEP / params.PKM2_i_KmPEP)^params.PKM2_n) *
-        ((1 + ADP / params.PKM2_i_KmADP + ATP / params.PKM2_i_KdATP)^params.PKM2_n) *
-        ((1 + F16BP / params.PKM2_i_KdF16BP)^params.PKM2_n)
-    )
-    Pa = (
-        ((1 + PEP / params.PKM2_a_KmPEP)^params.PKM2_n) *
-        ((1 + ADP / params.PKM2_a_KmADP + ATP / params.PKM2_a_KdATP)^params.PKM2_n) *
-        ((1 + F16BP / params.PKM2_a_KdF16BP)^params.PKM2_n) / Z
-    )
-    Pi = (
-        params.PKM2_L *
-        ((1 + PEP / params.PKM2_i_KmPEP)^params.PKM2_n) *
-        ((1 + ADP / params.PKM2_i_KmADP + ATP / params.PKM2_i_KdATP)^params.PKM2_n) *
-        ((1 + F16BP / params.PKM2_i_KdF16BP)^params.PKM2_n) / Z
-    )
-    PEP_bound = (
-        (params.PKM2_Conc / params.PKM2_MW) * (
-            Pa * (PEP / params.PKM2_a_KmPEP) / (1 + PEP / params.PKM2_a_KmPEP) +
-            Pi * (PEP / params.PKM2_i_KmPEP) / (1 + PEP / params.PKM2_i_KmPEP)
-        )
-    )
-    ADP_bound = (
-        (params.PKM2_Conc / params.PKM2_MW) * (
-            Pa * (ADP / params.PKM2_a_KmADP) / (1 + ADP / params.PKM2_a_KmADP + ATP / params.PKM2_a_KdATP) +
-            Pi * (ADP / params.PKM2_i_KmADP) / (1 + ADP / params.PKM2_i_KmADP + ATP / params.PKM2_i_KdATP)
-        )
-    )
-    ATP_bound = (
-        (params.PKM2_Conc / params.PKM2_MW) * (
-            Pa * (ATP / params.PKM2_a_KdATP) / (1 + ADP / params.PKM2_a_KmADP + ATP / params.PKM2_a_KdATP) +
-            Pi * (ATP / params.PKM2_i_KdATP) / (1 + ADP / params.PKM2_i_KmADP + ATP / params.PKM2_i_KdATP)
-        )
-    )
-    F16BP_bound = (
-        (params.PKM2_Conc / params.PKM2_MW) * (
-            Pa * (F16BP / params.PKM2_a_KdF16BP) / (1 + F16BP / params.PKM2_a_KdF16BP) +
-            Pi * (F16BP / params.PKM2_i_KdF16BP) / (1 + F16BP / params.PKM2_i_KdF16BP)
-        )
-    )
-    return (PEP = PEP_bound, ADP = ADP_bound, F16BP = F16BP_bound, ATP = ATP_bound)
-end
+# function binding_PKM2(PEP, ADP, F16BP, ATP, params)
+#     Z = (
+#         ((1 + PEP / params.PKM2_a_KmPEP)^params.PKM2_n) *
+#         ((1 + ADP / params.PKM2_a_KmADP + ATP / params.PKM2_a_KdATP)^params.PKM2_n) *
+#         ((1 + F16BP / params.PKM2_a_KdF16BP)^params.PKM2_n) +
+#         params.PKM2_L *
+#         ((1 + PEP / params.PKM2_i_KmPEP)^params.PKM2_n) *
+#         ((1 + ADP / params.PKM2_i_KmADP + ATP / params.PKM2_i_KdATP)^params.PKM2_n) *
+#         ((1 + F16BP / params.PKM2_i_KdF16BP)^params.PKM2_n)
+#     )
+#     Pa = (
+#         ((1 + PEP / params.PKM2_a_KmPEP)^params.PKM2_n) *
+#         ((1 + ADP / params.PKM2_a_KmADP + ATP / params.PKM2_a_KdATP)^params.PKM2_n) *
+#         ((1 + F16BP / params.PKM2_a_KdF16BP)^params.PKM2_n) / Z
+#     )
+#     Pi = (
+#         params.PKM2_L *
+#         ((1 + PEP / params.PKM2_i_KmPEP)^params.PKM2_n) *
+#         ((1 + ADP / params.PKM2_i_KmADP + ATP / params.PKM2_i_KdATP)^params.PKM2_n) *
+#         ((1 + F16BP / params.PKM2_i_KdF16BP)^params.PKM2_n) / Z
+#     )
+#     PEP_bound = (
+#         (params.PKM2_Conc / params.PKM2_MW) * (
+#             Pa * (PEP / params.PKM2_a_KmPEP) / (1 + PEP / params.PKM2_a_KmPEP) +
+#             Pi * (PEP / params.PKM2_i_KmPEP) / (1 + PEP / params.PKM2_i_KmPEP)
+#         )
+#     )
+#     ADP_bound = (
+#         (params.PKM2_Conc / params.PKM2_MW) * (
+#             Pa * (ADP / params.PKM2_a_KmADP) / (1 + ADP / params.PKM2_a_KmADP + ATP / params.PKM2_a_KdATP) +
+#             Pi * (ADP / params.PKM2_i_KmADP) / (1 + ADP / params.PKM2_i_KmADP + ATP / params.PKM2_i_KdATP)
+#         )
+#     )
+#     ATP_bound = (
+#         (params.PKM2_Conc / params.PKM2_MW) * (
+#             Pa * (ATP / params.PKM2_a_KdATP) / (1 + ADP / params.PKM2_a_KmADP + ATP / params.PKM2_a_KdATP) +
+#             Pi * (ATP / params.PKM2_i_KdATP) / (1 + ADP / params.PKM2_i_KmADP + ATP / params.PKM2_i_KdATP)
+#         )
+#     )
+#     F16BP_bound = (
+#         (params.PKM2_Conc / params.PKM2_MW) * (
+#             Pa * (F16BP / params.PKM2_a_KdF16BP) / (1 + F16BP / params.PKM2_a_KdF16BP) +
+#             Pi * (F16BP / params.PKM2_i_KdF16BP) / (1 + F16BP / params.PKM2_i_KdF16BP)
+#         )
+#     )
+#     return (PEP = PEP_bound, ADP = ADP_bound, F16BP = F16BP_bound, ATP = ATP_bound)
+# end
 
+function binding_PKM2(PEP, ADP, Pyruvate, ATP, F16BP, Phenylalanine, params)
+    Z_a_cat = (
+        1 +
+        (PEP / params.PKM2_K_a_PEP) +
+        (ATP / params.PKM2_K_ATP) +
+        (ADP / params.PKM2_K_ADP) +
+        (PEP / params.PKM2_K_a_PEP) * (ADP / params.PKM2_K_ADP) +
+        (Pyruvate / params.PKM2_K_Pyruvate) * (ATP / params.PKM2_K_ATP) +
+        (PEP / params.PKM2_K_a_PEP) * (ATP / params.PKM2_K_ATP) +
+        (Pyruvate / params.PKM2_K_Pyruvate) * (ADP / params.PKM2_K_ADP)
+    )
+    Z_i_cat = (
+        1 +
+        (PEP / params.PKM2_K_i_PEP) +
+        (ATP / params.PKM2_K_ATP) +
+        (ADP / params.PKM2_K_ADP) +
+        (PEP / params.PKM2_K_i_PEP) * (ADP / params.PKM2_K_ADP) +
+        (Pyruvate / params.PKM2_K_Pyruvate) * (ATP / params.PKM2_K_ATP) +
+        params.PKM2_β_i_PEP_ATP * (PEP / params.PKM2_K_i_PEP) * (ATP / params.PKM2_K_ATP) +
+        (Pyruvate / params.PKM2_K_Pyruvate) * (ADP / params.PKM2_K_ADP)
+    )
+    Z_a_reg = ((1 + F16BP / params.PKM2_K_a_F16BP) * (1 + Phenylalanine / params.PKM2_K_a_Phenylalanine))
+    Z_i_reg = (1 + Phenylalanine / params.PKM2_K_i_Phenylalanine)
+    Z = ((Z_a_cat^4) * (Z_a_reg^4) + params.PKM2_L * (Z_i_cat^4) * (Z_i_reg^4))
+
+    PEP_bound =
+        (
+            (params.PKM2_Conc / params.PKM2_MW) * (
+                (PEP / params.PKM2_K_a_PEP) *
+                (1 + (ADP / params.PKM2_K_ADP) + (ATP / params.PKM2_K_ATP)) *
+                (Z_a_cat^3) *
+                (Z_a_reg^4) +
+                params.PKM2_L *
+                (PEP / params.PKM2_K_i_PEP) *
+                (1 + (ADP / params.PKM2_K_ADP) + params.PKM2_β_i_PEP_ATP * (ATP / params.PKM2_K_ATP)) *
+                (Z_i_cat^3) *
+                (Z_i_reg^4)
+            )
+        ) / Z
+    ADP_bound =
+        (
+            (params.PKM2_Conc / params.PKM2_MW) * (
+                (ADP / params.PKM2_K_ADP) *
+                (1 + (PEP / params.PKM2_K_a_PEP) + (Pyruvate / params.PKM2_K_Pyruvate)) *
+                (Z_a_cat^3) *
+                (Z_a_reg^4) +
+                params.PKM2_L *
+                (ADP / params.PKM2_K_ADP) *
+                (1 + (PEP / params.PKM2_K_i_PEP) + (Pyruvate / params.PKM2_K_Pyruvate)) *
+                (Z_i_cat^3) *
+                (Z_i_reg^4)
+            )
+        ) / Z
+    Pyruvate_bound =
+        (
+            (params.PKM2_Conc / params.PKM2_MW) * (
+                (PEP / params.PKM2_K_a_PEP) *
+                (1 + (ADP / params.PKM2_K_ADP) + (ATP / params.PKM2_K_ATP)) *
+                (Z_a_cat^3) *
+                (Z_a_reg^4) +
+                params.PKM2_L *
+                (PEP / params.PKM2_K_i_PEP) *
+                (1 + (ADP / params.PKM2_K_ADP) + (ATP / params.PKM2_K_ATP)) *
+                (Z_i_cat^3) *
+                (Z_i_reg^4)
+            )
+        ) / Z
+    ATP_bound =
+        (
+            (params.PKM2_Conc / params.PKM2_MW) * (
+                (ATP / params.PKM2_K_ATP) *
+                (1 + (PEP / params.PKM2_K_a_PEP) + (Pyruvate / params.PKM2_K_Pyruvate)) *
+                (Z_a_cat^3) *
+                (Z_a_reg^4) +
+                params.PKM2_L *
+                (ATP / params.PKM2_K_ATP) *
+                (
+                    1 +
+                    params.PKM2_β_i_PEP_ATP * (PEP / params.PKM2_K_i_PEP) +
+                    (Pyruvate / params.PKM2_K_Pyruvate)
+                ) *
+                (Z_i_cat^3) *
+                (Z_i_reg^4)
+            )
+        ) / Z
+    F16BP_bound =
+        (
+            (params.PKM2_Conc / params.PKM2_MW) *
+            ((F16BP / params.PKM2_K_a_F16BP) * (Z_a_cat^4) * (Z_a_reg^3))
+        ) / Z
+    Phenylalanine_bound =
+        (
+            (params.PKM2_Conc / params.PKM2_MW) * (
+                ((Phenylalanine / params.PKM2_K_a_Phenylalanine) * (Z_a_cat^4) * (Z_a_reg^3)) +
+                params.PKM2_L * ((Phenylalanine / params.PKM2_K_i_Phenylalanine) * (Z_i_cat^4) * (Z_i_reg^3))
+            )
+        ) / Z
+    return (
+        PEP = PEP_bound,
+        ADP = ADP_bound,
+        Pyruvate = Pyruvate_bound,
+        ATP = ATP_bound,
+        F16BP = F16BP_bound,
+        Phenylalanine = Phenylalanine_bound,
+    )
+end
 function binding_LDH(Pyruvate, NADH, NAD, Lactate, params)
     denom = (
         1 +

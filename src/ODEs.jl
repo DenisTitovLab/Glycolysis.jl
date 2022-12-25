@@ -1,7 +1,7 @@
 #Glycolysis Model ODE system
 
 function glycolysis_ODEs(ds, s, params, t)
-    ds.Glucose_media = 0
+    ds.Glucose_media = 0.0
     ds.Glucose =
         rate_GLUT(s.Glucose_media, s.Glucose, params) -
         rate_HK1(s.Glucose, s.G6P, s.ATP, s.Phosphate, s.ADP, params)
@@ -24,25 +24,25 @@ function glycolysis_ODEs(ds, s, params, t)
         rate_PGK(s.BPG, s.ADP, s.ATP, s.ThreePG, params)
     ds.ThreePG = rate_PGK(s.BPG, s.ADP, s.ATP, s.ThreePG, params) - rate_PGM(s.ThreePG, s.TwoPG, params)
     ds.TwoPG = rate_PGM(s.ThreePG, s.TwoPG, params) - rate_ENO(s.TwoPG, s.PEP, params)
-    ds.PEP = rate_ENO(s.TwoPG, s.PEP, params) - rate_PKM2(s.PEP, s.ADP, s.F16BP, s.ATP, s.Pyruvate, params)
+    ds.PEP = rate_ENO(s.TwoPG, s.PEP, params) - rate_PKM2(s.PEP, s.ADP, s.Pyruvate, s.ATP, s.F16BP, s.Phenylalanine, params)
     ds.Pyruvate =
-        rate_PKM2(s.PEP, s.ADP, s.F16BP, s.ATP, s.Pyruvate, params) -
+        rate_PKM2(s.PEP, s.ADP, s.Pyruvate, s.ATP, s.F16BP, s.Phenylalanine, params) -
         rate_LDH(s.Pyruvate, s.NADH, s.NAD, s.Lactate, params)
     ds.Lactate =
         rate_LDH(s.Pyruvate, s.NADH, s.NAD, s.Lactate, params) - rate_MCT(s.Lactate, s.Lactate_media, params)
-    ds.Lactate_media = 0
+    ds.Lactate_media = 0.0
     ds.ATP = (
         -rate_HK1(s.Glucose, s.G6P, s.ATP, s.Phosphate, s.ADP, params) -
         rate_PFKP(s.F6P, s.ATP, s.F16BP, s.ADP, s.Phosphate, s.Citrate, s.F26BP, params) +
         rate_PGK(s.BPG, s.ADP, s.ATP, s.ThreePG, params) +
-        rate_PKM2(s.PEP, s.ADP, s.F16BP, s.ATP, s.Pyruvate, params) -
+        rate_PKM2(s.PEP, s.ADP, s.Pyruvate, s.ATP, s.F16BP, s.Phenylalanine, params) -
         rate_ATPase(s.ATP, s.ADP, s.Phosphate, params) + rate_AK(s.ATP, s.ADP, s.AMP, params)
     )
     ds.ADP = (
         rate_HK1(s.Glucose, s.G6P, s.ATP, s.Phosphate, s.ADP, params) +
         rate_PFKP(s.F6P, s.ATP, s.F16BP, s.ADP, s.Phosphate, s.Citrate, s.F26BP, params) -
         rate_PGK(s.BPG, s.ADP, s.ATP, s.ThreePG, params) -
-        rate_PKM2(s.PEP, s.ADP, s.F16BP, s.ATP, s.Pyruvate, params) +
+        rate_PKM2(s.PEP, s.ADP, s.Pyruvate, s.ATP, s.F16BP, s.Phenylalanine, params) +
         rate_ATPase(s.ATP, s.ADP, s.Phosphate, params) - 2 * rate_AK(s.ATP, s.ADP, s.AMP, params)
     )
     ds.AMP = rate_AK(s.ATP, s.ADP, s.AMP, params)
@@ -57,6 +57,7 @@ function glycolysis_ODEs(ds, s, params, t)
     ds.NADH =
         rate_GAPDH(s.GAP, s.NAD, s.Phosphate, s.BPG, s.NADH, params) -
         rate_LDH(s.Pyruvate, s.NADH, s.NAD, s.Lactate, params)
-    ds.F26BP = 0
-    ds.Citrate = 0
+    ds.F26BP = 0.0
+    ds.Citrate = 0.0
+    ds.Phenylalanine = 0.0
 end
