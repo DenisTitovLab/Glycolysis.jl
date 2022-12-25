@@ -1,19 +1,43 @@
 using LabelledArrays, Measurements
+
 #=
-To do list
+This file contains all the parameters needed to run Glycolysis.jl including
+kinetic constants, thermodynamic constants, enzyme concentrations, initial 
+conditions for ODE simulations (i.e., estimates of intracellular concentration of metabolites),
+and various constants for unit convertions.
 
-- add Km for products for PFKP and PKM2
-- rename params to something else as it conflicts with too many other library params
-
+Parameters are estimated from experimental data and many are in the form of Mean ± SEM to
+allow for propagation of uncertainty.
+ 
 =#
 
-# Define cellular parameters and kinetic+thermodynamic constants of enzymes
+###########################################################################################
+# Various constants for unit convertions
+###########################################################################################
+"Fraction of intracellular volume occupied by water with macromolecules making up the rest"
 water_fraction_cell_volume = 0.66
-cytosol_fraction_cell_volume = 0.66
-cell_volume_correction = water_fraction_cell_volume * cytosol_fraction_cell_volume
-cell_protein_density = 0.2 #mg/ul
 
-# Define initial concentrations of metabolites for model simulations
+"Fraction of intracellular volume occupied by cytosol"
+cytosol_fraction_cell_volume = 0.66
+
+"""
+Correction for cytosolic volume and its water content to better estimate concentration of 
+cytosolic molecules from total cellular concentration and vice versa
+"""
+cell_volume_correction = water_fraction_cell_volume * cytosol_fraction_cell_volume
+
+"Intracellular protein density, mg protein per µl of cell volume"
+cell_protein_density = 0.2
+
+###########################################################################################
+# Initial conditions for ODE simulations
+###########################################################################################
+"""
+Intracellular concentrations of glycolytic intermediates in mammalian cells (M units).
+`glycolysis_init_conc` can be used as initial condition for simulating glycolysis ODEs model.
+Values are corrected for protein concentration and cytosol fraction to better represent
+metabolite concentration in cytosol.
+"""
 glycolysis_init_conc = LVector(
     Glucose_media = 25e-3,
     Glucose = 6.12e-3 / cell_volume_correction,
@@ -28,7 +52,7 @@ glycolysis_init_conc = LVector(
     PEP = 4.29e-5 / cell_volume_correction,
     Pyruvate = 6.77e-4 / cell_volume_correction,
     Lactate = 2.74e-3 / cell_volume_correction,
-    Lactate_media = 1e-3 / cell_volume_correction,
+    Lactate_media = 2e-3,
     ATP = 3.32e-3 / cell_volume_correction,
     ADP = 3.96e-4 / cell_volume_correction,
     AMP = 9.41e-5 / cell_volume_correction,
@@ -37,6 +61,7 @@ glycolysis_init_conc = LVector(
     NADH = 3.58e-5 / cell_volume_correction,
     F26BP = 0.0 / cell_volume_correction,
     Citrate = 0.0 / cell_volume_correction,
+    Phenylalanine = 0.0 / cell_volume_correction,
 )
 
 tracing_13C_multiplier = 1e-3
@@ -54,11 +79,10 @@ glycolysis_13C_tracing_init_conc = LVector(
     PEP_12C = 4.29e-5 / cell_volume_correction,
     Pyruvate_12C = 6.77e-4 / cell_volume_correction,
     Lactate_12C = 2.74e-3 / cell_volume_correction,
-    # Lactate_media_12C = 1e-3,
     Lactate_media_12C = 0.0,
     F26BP_12C = 0.0 / cell_volume_correction,
     Citrate_12C = 0.0 / cell_volume_correction,
-    
+    Phenylalanine_12C = 0.0 / cell_volume_correction,
     Glucose_media_13C = tracing_13C_multiplier * 25e-3,
     Glucose_13C = tracing_13C_multiplier * 6.12e-3 / cell_volume_correction,
     G6P_13C = tracing_13C_multiplier * 1.73e-4 / cell_volume_correction,
@@ -72,11 +96,10 @@ glycolysis_13C_tracing_init_conc = LVector(
     PEP_13C = tracing_13C_multiplier * 4.29e-5 / cell_volume_correction,
     Pyruvate_13C = tracing_13C_multiplier * 6.77e-4 / cell_volume_correction,
     Lactate_13C = tracing_13C_multiplier * 2.74e-3 / cell_volume_correction,
-    # Lactate_media_13C = tracing_13C_multiplier * 1e-3,
-    Lactate_media_13C = 0.0,
+    Lactate_media_13C = tracing_13C_multiplier * 0.0,
     F26BP_13C = tracing_13C_multiplier * 0.0 / cell_volume_correction,
     Citrate_13C = tracing_13C_multiplier * 0.0 / cell_volume_correction,
-
+    Phenylalanine_13C = tracing_13C_multiplier * 0.0 / cell_volume_correction,
     ATP = 3.32e-3 / cell_volume_correction,
     ADP = 3.96e-4 / cell_volume_correction,
     AMP = 9.41e-5 / cell_volume_correction,
@@ -89,15 +112,33 @@ glycolysis_13C_tracing_init_conc = LVector(
 #= Values of parameters with uncertainty
 Parameters have the following units:
 K - M
-Vmax - umole/min per mg protein or U per mg
+Vmax - µmol/min per mg protein or U per mg
 Conc - mg protein/ul of cytosolic volume (converted from mg protein/mg proteome)
 Conc⋅Vmax - M/min
 Keq - either unitless or concentration
 MW - g / mole /1000
 =#
 
+###########################################################################################
+# Kinetic and thermodynamic parameters for enzyme rate equations
+###########################################################################################
+
+"""
+Mean ± SEM of kinetic and thermodynamic parameters for enzyme rate equations.  
+Use `propertynames(glycolysis_params_w_uncertainty)` for list of all parameters given  
+as "EnzymeGeneName_ParameterName".  
+  
+    Parameters have the following units:  
+    K - M  
+    β - unitless  
+    Vmax - µmol/min per mg protein or U per mg  
+    Keq - depends on reaction stoichiometry  
+    Conc - mg protein/ul of cytosolic volume (converted from mg protein/mg proteome)  
+    Conc⋅Vmax - M/min  
+    Keq - either unitless or concentration  
+    MW - g / mole /1000  
+"""
 glycolysis_params_w_uncertainty = LVector(
-    # Intermediate_cons_frac = 0.0,
     GLUT_Km_Glucose = 20e-3 ± 4e-3,
     GLUT_Conc = (cell_protein_density / cell_volume_correction) * (1.4e-4 ± 4e-5),
     GLUT_Vmax = 1100.0 ± 300.0,
@@ -115,7 +156,6 @@ glycolysis_params_w_uncertainty = LVector(
     HK1_Vmax = 53.0 ± 5.0,
     HK1_Keq = 2700.0 ± 800.0,
     HK1_MW = 102486.0 / 1000,
-    HK1_n = 1.0, # To be removed once bound equations are edited
     GPI_Km_G6P = 330e-6 ± 100e-6,
     GPI_Km_F6P = 70e-6 ± 20e-6,
     GPI_Conc = (cell_protein_density / cell_volume_correction) * (1.4e-3 ± 1e-4),
@@ -133,10 +173,10 @@ glycolysis_params_w_uncertainty = LVector(
     PFKP_K_a_F26BP = 3.4e-7 ± 1.2e-7,
     PFKP_K_i_F26BP = 1.1e-6 ± 0.3e-6,
     PFKP_K_i_Citrate = 3.6e-3 ± 0.3e-3,
-    PFKP_Conc = (cell_protein_density / cell_volume_correction) * (8.6e-4 ± 1.2e-4), #Enzyme abundance in mg enzyme per ul cellular protein
-    PFKP_Vmax = 80 ± 22, #Max forward rate of active PFKP form enzyme, umole/min per mg enzyme
-    PFKP_Keq = 760.0 ± 380.0, #Equilibrium constant of PFK reaction at pH=7.4 and Ionic Strength=0.1M
-    PFKP_MW = 85596.0 / 1000, #Molecular weight of enzyme, mg/umol
+    PFKP_Conc = (cell_protein_density / cell_volume_correction) * (8.6e-4 ± 1.2e-4),
+    PFKP_Vmax = 80 ± 22,
+    PFKP_Keq = 760.0 ± 380.0,
+    PFKP_MW = 85596.0 / 1000,
     ALDO_Km_F16BP = 17e-6 ± 5e-6,
     ALDO_Km_DHAP = 430e-6 ± 240e-6,
     ALDO_Kd_DHAP = 12e-6 ± 5e-6,
@@ -166,11 +206,6 @@ glycolysis_params_w_uncertainty = LVector(
     GAPDH_Vmax = 130 ± 20,
     GAPDH_Keq = 16 ± 5,
     GAPDH_MW = 36053.0 / 1000,
-
-    # Below GAPDH constants to be removed after adjusting bound equations
-    GAPDH_Km_Phosphate = 7.1e-4, #Km, M
-    GAPDH_Km_NAD = 0.047e-3, #Km, M
-    GAPDH_Km_NADH = 0.01e-3, #Km, M
     PGK_K_BPG = 3e-6 ± 0.7e-6,
     PGK_K_ADP = 42e-6 ± 10e-6,
     PGK_K_ThreePG = 660e-6 ± 220e-6,
@@ -190,29 +225,25 @@ glycolysis_params_w_uncertainty = LVector(
     PGM_MW = 28804.0 / 1000,
     ENO_Km_TwoPG = 40e-6 ± 9e-6,
     ENO_Km_PEP = 160e-6 ± 30e-6,
-    ENO_Conc = (cell_protein_density / cell_volume_correction) * (9.6e-3 ± 0.5e-3), #Enzyme abundance in mg enzyme per ul cellular protein
+    ENO_Conc = (cell_protein_density / cell_volume_correction) * (9.6e-3 ± 0.5e-3),
     ENO_Vmax = 71 ± 9,
     ENO_Keq = 4.4 ± 1.0,
     ENO_MW = 47169.0 / 1000,
-    PKM2_L = exp(-(-9.06346122e+00)),
-    #PKM2_L = 0.0,
-    PKM2_a_KmPEP = 7.81331145e-05,  #Km of PKM2 active form for PEP, M
-    PKM2_a_KmADP = 9.10888386e-05,  #Km of PKM2 active form for ADP, M
-    PKM2_a_KdF16BP = 10e-6,  #Kd of PKM2 active form for allosteric activator F16BP, M
-    #PKM2_a_KdF16BP = Inf,  #Kd of PKM2 active form for allosteric activator F16BP, M
-    PKM2_a_KdATP = 4.13743762e-04,  #Kd of PKM2 active form for inhibitor ATP, M
-    PKM2_i_KmPEP = 2.04925488e-03,  #Km of PKM2 inactive form for PEP, M
-    PKM2_i_KmADP = 1.41515745e-04,  #Km of PKM2 inactive form for ADP, M
-    PKM2_i_KdF16BP = 1000.0,  #Kd of PKM2 inactive form for allosteric activator F16BP, M
-    #PKM2_i_KdF16BP = Inf,  #Kd of PKM2 inactive form for allosteric activator F16BP, M
-    PKM2_i_KdATP = 4.26282043e-04,  #Kd of PKM2 active form for inhibitor ATP, M
-    PKM2_Conc = (cell_protein_density / cell_volume_correction) * (7.5e-3 ± 1.0e-3), #Enzyme abundance in mg enzyme per ul cellular protein
-    PKM2_a_Vmax = 220.0,  #Max forward rate of active PKM2 form enzyme, M/min OR umole/min per ul of cell volume
-    PKM2_i_Vmax = 220.0,  #Max forward rate of inactive PKM2 form enzyme, M/min OR umole/min per ul of cell volume
-    PKM2_Vmax = 220.0,  #Max forward rate of active PKM2 form enzyme, M/min OR umole/min per ul of cell volume
-    PKM2_n = 4.0,  #number of subunits/oligomeric state of PKM2 in solution
-    PKM2_Keq = 31000.0,  #Equilibrium constant of reaction at pH=7.4 and Ionic Strength=0.1M
-    PKM2_MW = 57937.0 / 1000, #Molecular weight of enzyme, mg/umol
+    PKM2_L = 26.0 ± 7.0,
+    PKM2_Vmax_a = 540.0 ± 100.0,
+    PKM2_Vmax_i = 86.0 ± 41.0,
+    PKM2_K_a_PEP = 150e-6 ± 20e-6,
+    PKM2_K_ADP = 320e-6 ± 50e-6,
+    PKM2_K_Pyruvate = 1800e-6 ± 400e-6,
+    PKM2_K_ATP = 940e-6 ± 250e-6,
+    PKM2_K_a_F16BP = 1.4e-6 ± 0.4e-6,
+    PKM2_K_a_Phenylalanine = 2100e-6 ± 600e-6,
+    PKM2_K_i_PEP = 2400e-6 ± 600e-6,
+    PKM2_K_i_Phenylalanine = 200e-6 ± 30e-6,
+    PKM2_β_i_PEP_ATP = 12.0 ± 5.0,
+    PKM2_Keq = 20000.0 ± 6000.0,
+    PKM2_Conc = (cell_protein_density / cell_volume_correction) * (7.5e-3 ± 1.0e-3),
+    PKM2_MW = 57937.0 / 1000,
     LDH_Km_Pyruvate = 140e-6 ± 20e-6,
     LDH_Km_NADH = 20e-6 ± 2e-6,
     LDH_Km_Lactate = 6.6e-3 ± 0.7e-3,
@@ -224,22 +255,53 @@ glycolysis_params_w_uncertainty = LVector(
     LDH_Keq = 13000 ± 5000,
     LDH_MW = 36689.0 / 1000,
     MCT_Km_Lactate = 5.5e-3 ± 0.9e-3,
-    MCT_Conc = (cell_protein_density / cell_volume_correction) * (1.5e-4 ± 0.3e-4), #Enzyme abundance in mg enzyme per ul cellular protein
-    MCT_Vmax = 470.0 ± 230, #Max forward rate of enzyme, umole/min per mg of enzyme
-    MCT_Keq = 1.0, #Equilibrium constant of reaction at pH=7.4 and Ionic Strength=0.1M
-    MCT_MW = 53944.0 / 1000, #Molecular weight of enzyme, mg/umol
-    AK_Km_ADP = 0.12e-3, #Km, M
-    AK_Km_ATP = 0.11e-3, #Km, M
-    AK_Km_AMP = 0.09e-3, #Km, M
-    AK_Vmax = 0.03, #M/min OR umole/min per ul of cell volume. Calculated based on estimate of 10 umole/mg (7-200 range) per hour of dryg weight in tissues
-    AK_Keq = 0.48, #Equilibrium constant of enzyme reaction
-    AK_MW = 21635.0 / 1000, #Molecular weight of enzyme, mg/umol
-    ATPase_Km_ATP = 1e-6, #Km, M
-    ATPase_Km_ADP = 1e-3, #Km, M
-    ATPase_Km_Phosphate = 1e-3, #Km, M
-    ATPase_Keq = 83000.0, #Equilibrium constant of enzyme reaction
-    ATPase_Vmax = 0.0002, #Km, M
+    MCT_Conc = (cell_protein_density / cell_volume_correction) * (1.5e-4 ± 0.3e-4),
+    MCT_Vmax = 470.0 ± 230,
+    MCT_Keq = 1.0,
+    MCT_MW = 53944.0 / 1000,
+    AK_Km_ADP = 0.12e-3,
+    AK_Km_ATP = 0.11e-3,
+    AK_Km_AMP = 0.09e-3,
+    AK_Vmax = 0.03,
+    AK_Keq = 0.48,
+    AK_MW = 21635.0 / 1000,
+    ATPase_Km_ATP = 1e-6,
+    ATPase_Km_ADP = 1e-3,
+    ATPase_Km_Phosphate = 1e-3,
+    ATPase_Keq = 83000.0,
+    ATPase_Vmax = 0.0002,
 )
 
+"""
+LArray containing mean of kinetic and thermodynamic parameters for enzyme rate equations.  
+Use `propertynames(glycolysis_params)` for list of all parameters given  
+as "EnzymeGeneName_ParameterName".  
+  
+    Parameters have the following units:  
+    K - M  
+    β - unitless  
+    Vmax - µmol/min per mg protein or U per mg  
+    Keq - depends on reaction stoichiometry  
+    Conc - mg protein/ul of cytosolic volume (converted from mg protein/mg proteome)  
+    Conc⋅Vmax - M/min  
+    Keq - either unitless or concentration  
+    MW - g / mole /1000  
+"""
 glycolysis_params = Measurements.value.(glycolysis_params_w_uncertainty)
+
+"""
+SEM of kinetic and thermodynamic parameters for enzyme rate equations.  
+Use `propertynames(glycolysis_params_uncertainty)` for list of all parameters given  
+as "EnzymeGeneName_ParameterName".  
+  
+    Parameters have the following units:  
+    K - M  
+    β - unitless  
+    Vmax - µmol/min per mg protein or U per mg  
+    Keq - depends on reaction stoichiometry  
+    Conc - mg protein/ul of cytosolic volume (converted from mg protein/mg proteome)  
+    Conc⋅Vmax - M/min  
+    Keq - either unitless or concentration  
+    MW - g / mole /1000  
+"""
 glycolysis_params_uncertainty = Measurements.uncertainty.(glycolysis_params_w_uncertainty)

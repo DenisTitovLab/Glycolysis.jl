@@ -12,7 +12,5 @@ export glycolysis_ODEs
 export glycolysis_params
 export glycolysis_params_uncertainty
 export glycolysis_init_conc
-export glycolysis_13C_tracing_ODEs
-export glycolysis_13C_tracing_init_conc
 
 end
