@@ -32,7 +32,7 @@ cell_protein_density = 0.2
 ###########################################################################################
 # Initial conditions for ODE simulations
 ###########################################################################################
-0.00304524 ± 0.000494698 / cell_volume_correction
+
 """
 Mean ± SEM of intracellular concentrations of glycolytic intermediates in mammalian cells (M units).
 Values are corrected for protein concentration and cytosol fraction to better represent
