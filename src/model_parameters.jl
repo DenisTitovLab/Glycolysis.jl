@@ -134,7 +134,7 @@ Intracellular concentrations of 12C and 13C glycolytic intermediates in mammalia
 Values are corrected for protein concentration and cytosol fraction to better represent
 metabolite concentration in cytosol.
 """
-glycolysis_13C_tracing_init_conc = Measurements.uncertainty.(glycolysis_13C_tracing_init_conc_w_uncertainty)
+glycolysis_13C_tracing_init_conc = Measurements.values.(glycolysis_13C_tracing_init_conc_w_uncertainty)
 
 """
 SEM of intracellular concentrations of 12C and 13C glycolytic intermediates in mammalian cells (M units).
