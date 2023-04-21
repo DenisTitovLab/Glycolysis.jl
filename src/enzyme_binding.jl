@@ -1,72 +1,72 @@
 function free_to_total_conc(f, params)
     b = similar(f)
     b.Glucose_media = 0.0
-    b.Glucose = (
+    b.Glucose = cell_volume_correction * (
         binding_GLUT(f.Glucose_media, f.Glucose, params).Glucose +
         binding_HK1(f.Glucose, f.G6P, f.ATP, f.ADP, f.Phosphate, params).Glucose
     )
-    b.G6P = (
+    b.G6P = cell_volume_correction * (
         binding_HK1(f.Glucose, f.G6P, f.ATP, f.ADP, f.Phosphate, params).G6P +
         binding_GPI(f.G6P, f.F6P, params).G6P
     )
-    b.F6P = (
+    b.F6P = cell_volume_correction * (
         binding_GPI(f.G6P, f.F6P, params).F6P +
         binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).F6P
     )
-    b.F16BP = (
+    b.F16BP = cell_volume_correction * (
         binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).F16BP +
         binding_ALDO(f.F16BP, f.GAP, f.DHAP, params).F16BP +
         binding_PKM2(f.PEP, f.ADP, f.Pyruvate, f.ATP, f.F16BP, f.Phenylalanine, params).F16BP
     )
-    b.GAP = (
+    b.GAP = cell_volume_correction * (
         binding_ALDO(f.F16BP, f.GAP, f.DHAP, params).GAP +
         binding_TPI(f.GAP, f.DHAP, params).GAP +
         binding_GAPDH(f.GAP, f.NAD, f.Phosphate, f.BPG, f.NADH, params).GAP
     )
-    b.DHAP = (binding_ALDO(f.F16BP, f.GAP, f.DHAP, params).DHAP + binding_TPI(f.GAP, f.DHAP, params).DHAP)
-    b.BPG = (
+    b.DHAP = cell_volume_correction * (binding_ALDO(f.F16BP, f.GAP, f.DHAP, params).DHAP + binding_TPI(f.GAP, f.DHAP, params).DHAP)
+    b.BPG = cell_volume_correction * (
         binding_GAPDH(f.GAP, f.NAD, f.Phosphate, f.BPG, f.NADH, params).BPG +
         binding_PGK(f.BPG, f.ADP, f.ATP, f.ThreePG, params).BPG
     )
-    b.ThreePG = (
+    b.ThreePG = cell_volume_correction * (
         binding_PGK(f.BPG, f.ADP, f.ATP, f.ThreePG, params).ThreePG +
         binding_PGM(f.ThreePG, f.TwoPG, params).ThreePG
     )
-    b.TwoPG = (binding_PGM(f.ThreePG, f.TwoPG, params).TwoPG + binding_ENO(f.TwoPG, f.PEP, params).TwoPG)
-    b.PEP = (binding_ENO(f.TwoPG, f.PEP, params).PEP + binding_PKM2(f.PEP, f.ADP, f.Pyruvate, f.ATP, f.F16BP, f.Phenylalanine, params).PEP)
-    b.Pyruvate = binding_PKM2(f.PEP, f.ADP, f.Pyruvate, f.ATP, f.F16BP, f.Phenylalanine, params).Pyruvate
-    b.Lactate = binding_MCT(f.Lactate, f.Lactate_media, params).Lactate
+    b.TwoPG = cell_volume_correction * (binding_PGM(f.ThreePG, f.TwoPG, params).TwoPG + binding_ENO(f.TwoPG, f.PEP, params).TwoPG)
+    b.PEP = cell_volume_correction * (binding_ENO(f.TwoPG, f.PEP, params).PEP + binding_PKM2(f.PEP, f.ADP, f.Pyruvate, f.ATP, f.F16BP, f.Phenylalanine, params).PEP)
+    b.Pyruvate = cell_volume_correction * binding_PKM2(f.PEP, f.ADP, f.Pyruvate, f.ATP, f.F16BP, f.Phenylalanine, params).Pyruvate
+    b.Lactate = cell_volume_correction * binding_MCT(f.Lactate, f.Lactate_media, params).Lactate
     b.Lactate_media = 0.0
-    b.ATP = (
+    b.ATP = cell_volume_correction * (
         binding_HK1(f.Glucose, f.G6P, f.ATP, f.ADP, f.Phosphate, params).ATP +
         binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).ATP +
         binding_PGK(f.BPG, f.ADP, f.ATP, f.ThreePG, params).ATP +
         binding_PKM2(f.PEP, f.ADP, f.Pyruvate, f.ATP, f.F16BP, f.Phenylalanine, params).ATP
     )
-    b.ADP = (
+    b.ADP = cell_volume_correction * (
         binding_HK1(f.Glucose, f.G6P, f.ATP, f.ADP, f.Phosphate, params).ADP +
         binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).ADP +
         binding_PGK(f.BPG, f.ADP, f.ATP, f.ThreePG, params).ADP +
         binding_PKM2(f.PEP, f.ADP, f.Pyruvate, f.ATP, f.F16BP, f.Phenylalanine, params).ADP
     )
-    b.AMP = 0
-    b.Phosphate = (
+    b.AMP = cell_volume_correction * 0
+    b.Phosphate = cell_volume_correction * (
         binding_GAPDH(f.GAP, f.NAD, f.Phosphate, f.BPG, f.NADH, params).Phosphate +
         binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).Phosphate +
         binding_HK1(f.Glucose, f.G6P, f.ATP, f.ADP, f.Phosphate, params).Phosphate
     )
-    b.NAD = (
+    b.NAD = cell_volume_correction * (
         binding_LDH(f.Pyruvate, f.NADH, f.NAD, f.Lactate, params).NAD +
         binding_GAPDH(f.GAP, f.NAD, f.Phosphate, f.BPG, f.NADH, params).NAD
     )
-    b.NADH = (
+    b.NADH = cell_volume_correction * (
         binding_GAPDH(f.GAP, f.NAD, f.Phosphate, f.BPG, f.NADH, params).NADH +
         binding_LDH(f.Pyruvate, f.NADH, f.NAD, f.Lactate, params).NADH
     )
-    b.F26BP = (binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).F26BP)
-    b.Citrate = (binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).Citrate)
-    b.Phenylalanine = (binding_PKM2(f.PEP, f.ADP, f.Pyruvate, f.ATP, f.F16BP, f.Phenylalanine, params).Phenylalanine)
-    return (b + f) .* cell_volume_correction
+    b.F26BP = cell_volume_correction * (binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).F26BP)
+    b.Citrate = cell_volume_correction * (binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).Citrate)
+    b.Phenylalanine = cell_volume_correction * (binding_PKM2(f.PEP, f.ADP, f.Pyruvate, f.ATP, f.F16BP, f.Phenylalanine, params).Phenylalanine)
+    return (b + f)
 end
 
 function free_to_bound_conc(f, params)
