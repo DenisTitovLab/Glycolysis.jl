@@ -66,7 +66,7 @@ glycolysis_init_conc_w_uncertainty = LVector(
 
 """
 Intracellular concentrations of glycolytic intermediates in mammalian cells (M units).
-`glycolysis_init_conc` can be used as initial condition for simulating glycolysis ODEs model.
+`glycolysis_init_conc` can be used as initial condition for simulating `glycolysis_ODEs` glycolysis ODEs model.
 Values are corrected for protein concentration and cytosol fraction to better represent
 metabolite concentration in cytosol.
 """
@@ -79,49 +79,69 @@ metabolite concentration in cytosol.
 """
 glycolysis_init_conc_uncertainty = Measurements.uncertainty.(glycolysis_init_conc_w_uncertainty)
 
-tracing_13C_multiplier = 1e-3
-glycolysis_13C_tracing_init_conc = LVector(
+tracing_13C_multiplier = 1e-6
+"""
+Mean ± SEM of intracellular concentrations of 12C and 13C glycolytic intermediates in mammalian cells (M units).
+Values are corrected for protein concentration and cytosol fraction to better represent
+metabolite concentration in cytosol.
+"""
+glycolysis_13C_tracing_init_conc_w_uncertainty = LVector(
     Glucose_media_12C = 25e-3,
-    Glucose_12C = 0.00304524 / cell_volume_correction,
-    G6P_12C = 0.000157779 / cell_volume_correction,
-    F6P_12C = 9.58544e-5 / cell_volume_correction,
-    F16BP_12C = 0.000540334 / cell_volume_correction,
-    GAP_12C = 0.000100161 / cell_volume_correction,
-    DHAP_12C = 0.000875118 / cell_volume_correction,
-    BPG_12C = 1.1e-6 / cell_volume_correction,
-    ThreePG_12C = 0.00183213 / cell_volume_correction,
-    TwoPG_12C = 0.000566489 / cell_volume_correction,
-    PEP_12C = 9.06646e-5 / cell_volume_correction,
-    Pyruvate_12C = 0.000627051 / cell_volume_correction,
-    Lactate_12C = 0.00951846 / cell_volume_correction,
+    Glucose_12C = (0.00304524 ± 0.000494698) / cell_volume_correction,
+    G6P_12C = (0.000157779 ± 2.81383e-5) / cell_volume_correction,
+    F6P_12C = (9.58544e-5 ± 1.11376e-5) / cell_volume_correction,
+    F16BP_12C = (0.000540334 ± 0.000107049) / cell_volume_correction,
+    GAP_12C = (0.000100161 ± 2.5261e-5) / cell_volume_correction,
+    DHAP_12C = (0.000875118 ± 0.000246951) / cell_volume_correction,
+    BPG_12C = (1.1e-6 ± 5.56776e-7) / cell_volume_correction,
+    ThreePG_12C = (0.00183213 ± 0.000696696) / cell_volume_correction,
+    TwoPG_12C = (0.000566489 ± 0.000255444) / cell_volume_correction,
+    PEP_12C = (9.06646e-5 ± 2.06619e-5) / cell_volume_correction,
+    Pyruvate_12C = (0.000627051 ± 0.000262865) / cell_volume_correction,
+    Lactate_12C = (0.00951846 ± 0.00229632) / cell_volume_correction,
     Lactate_media_12C = 2e-3,
     F26BP_12C = 0.0 / cell_volume_correction,
     Citrate_12C = 0.0 / cell_volume_correction,
     Phenylalanine_12C = 0.0 / cell_volume_correction,
     Glucose_media_13C = tracing_13C_multiplier * 25e-3,
-    Glucose_13C = tracing_13C_multiplier * 0.00304524 / cell_volume_correction,
-    G6P_13C = tracing_13C_multiplier * 0.000157779 / cell_volume_correction,
-    F6P_13C = tracing_13C_multiplier * 9.58544e-5 / cell_volume_correction,
-    F16BP_13C = tracing_13C_multiplier * 0.000540334 / cell_volume_correction,
-    GAP_13C = tracing_13C_multiplier * 0.000100161 / cell_volume_correction,
-    DHAP_13C = tracing_13C_multiplier * 0.000875118 / cell_volume_correction,
-    BPG_13C = tracing_13C_multiplier * 1.1e-6 / cell_volume_correction,
-    ThreePG_13C = tracing_13C_multiplier * 0.00183213 / cell_volume_correction,
-    TwoPG_13C = tracing_13C_multiplier * 0.000566489 / cell_volume_correction,
-    PEP_13C = tracing_13C_multiplier * 9.06646e-5 / cell_volume_correction,
-    Pyruvate_13C = tracing_13C_multiplier * 0.000627051 / cell_volume_correction,
-    Lactate_13C = tracing_13C_multiplier * 0.00951846 / cell_volume_correction,
+    Glucose_13C = tracing_13C_multiplier * (0.00304524 ± 0.000494698) / cell_volume_correction,
+    G6P_13C = tracing_13C_multiplier * (0.000157779 ± 2.81383e-5) / cell_volume_correction,
+    F6P_13C = tracing_13C_multiplier * (9.58544e-5 ± 1.11376e-5) / cell_volume_correction,
+    F16BP_13C = tracing_13C_multiplier * (0.000540334 ± 0.000107049) / cell_volume_correction,
+    GAP_13C = tracing_13C_multiplier * (0.000100161 ± 2.5261e-5) / cell_volume_correction,
+    DHAP_13C = tracing_13C_multiplier * (0.000875118 ± 0.000246951) / cell_volume_correction,
+    BPG_13C = tracing_13C_multiplier * (1.1e-6 ± 5.56776e-7) / cell_volume_correction,
+    ThreePG_13C = tracing_13C_multiplier * (0.00183213 ± 0.000696696) / cell_volume_correction,
+    TwoPG_13C = tracing_13C_multiplier * (0.000566489 ± 0.000255444) / cell_volume_correction,
+    PEP_13C = tracing_13C_multiplier * (9.06646e-5 ± 2.06619e-5) / cell_volume_correction,
+    Pyruvate_13C = tracing_13C_multiplier * (0.000627051 ± 0.000262865) / cell_volume_correction,
+    Lactate_13C = tracing_13C_multiplier * (0.00951846 ± 0.00229632) / cell_volume_correction,
     Lactate_media_13C = tracing_13C_multiplier * 2e-3,
     F26BP_13C = tracing_13C_multiplier * 0.0 / cell_volume_correction,
     Citrate_13C = tracing_13C_multiplier * 0.0 / cell_volume_correction,
     Phenylalanine_13C = tracing_13C_multiplier * 0.0 / cell_volume_correction,
-    ATP = 0.00307428 / cell_volume_correction,
-    ADP = 0.000598282 / cell_volume_correction,
-    AMP = 0.000108005 / cell_volume_correction,
-    Phosphate = 0.004025 / cell_volume_correction,
-    NAD = 0.000353841 / cell_volume_correction,
-    NADH = 3.15907e-5 / cell_volume_correction,
+    ATP = (0.00307428 ± 0.000391117) / cell_volume_correction,
+    ADP = (0.000598282 ± 0.000118522) / cell_volume_correction,
+    AMP = (0.000108005 ± 1.73621e-5) / cell_volume_correction,
+    Phosphate = (0.004025 ± 0.0011287) / cell_volume_correction,
+    NAD = (0.000353841 ± 4.84302e-5) / cell_volume_correction,
+    NADH = (3.15907e-5 ± 6.911e-6) / cell_volume_correction,
 )
+
+"""
+Intracellular concentrations of 12C and 13C glycolytic intermediates in mammalian cells (M units).
+`glycolysis_init_conc` can be used as initial condition for simulating `glycolysis_13C_tracing_ODEs` glycolysis ODEs model.
+Values are corrected for protein concentration and cytosol fraction to better represent
+metabolite concentration in cytosol.
+"""
+glycolysis_13C_tracing_init_conc = Measurements.uncertainty.(glycolysis_13C_tracing_init_conc_w_uncertainty)
+
+"""
+SEM of intracellular concentrations of 12C and 13C glycolytic intermediates in mammalian cells (M units).
+Values are corrected for protein concentration and cytosol fraction to better represent
+metabolite concentration in cytosol.
+"""
+glycolysis_13C_tracing_init_conc_uncertainty = Measurements.uncertainty.(glycolysis_13C_tracing_init_conc_w_uncertainty)
 
 
 #= Values of parameters with uncertainty
