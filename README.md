@@ -27,3 +27,5 @@ Legend(fig[1, 2], ax)
 fig
 ```
 <img src="https://user-images.githubusercontent.com/75404066/205350460-f73de619-14c3-42a4-95d7-7fa0d6e077ee.png" width="500">
+
+See **bioRxiv figures** folder for more examples of how to use this package
