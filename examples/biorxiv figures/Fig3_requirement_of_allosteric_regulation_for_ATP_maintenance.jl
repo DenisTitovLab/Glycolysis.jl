@@ -154,8 +154,6 @@ fig = Figure(resolution = size_pt)
 # full_color = :black
 # no_reg_color = :red
 
-full_color = Makie.wong_colors()[1]
-no_reg_color = no_reg_color
 full_color = :Black
 no_reg_color = :Red
 line_ATPase_width = 2
@@ -445,4 +443,5 @@ label_f = fig[2, 3, TopLeft()] = Label(fig, "F", fontsize = 12, halign = :right,
 
 fig
 
-# save("/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/$(Dates.format(now(),"mmddyy"))_Fig3_allostery_required_for_ATP_maintenence.png", fig, px_per_unit = 4)
+# uncomment the line below to save the plot
+# save("Results/$(Dates.format(now(),"mmddyy"))_Fig3_allostery_required_for_ATP_maintenence.png", fig, px_per_unit = 4)
