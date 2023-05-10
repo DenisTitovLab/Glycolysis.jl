@@ -1,6 +1,6 @@
 using Glycolysis
 using DifferentialEquations
-using CairoMakie, DataFrames, Dates, Printf, CSV, Statistics
+using CairoMakie, DataFrames, Dates, Printf, CSV, XLSX, Statistics
 
 ##
 # Precalculate output of complete model
@@ -196,26 +196,12 @@ axislegend(
 
 #Plot [Metabolite] of model vs data
 Model_Result_bootstrap = CSV.read(
-    # "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/050422_Glycolysis_Processed_Results_w_CI.csv",
-    # "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/120322_Glycolysis_Processed_Results_w_CI.csv",
-    # "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/121722_Glycolysis_Processed_Results_w_CI.csv",
-    # "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/122222_Glycolysis_Processed_Results_w_CI.csv",
-    # "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/122422_Glycolysis_Processed_Results_10000_reps_w_CI.csv",
-    # "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/122522_Glycolysis_Processed_Results_10000_reps_w_CI.csv",
-    # "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/122522_Glycolysis_Processed_Results_10000_reps_w_CI_min_HK_PFK.csv",
-    # "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/122622_Glycolysis_Processed_Results_10000_reps_w_CI_min_HK_PFK.csv",
-    # "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/042323_Glycolysis_Processed_Results_10000_reps_w_CI_min_HK_PFK_no_lactate_media.csv",
-    "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/042023_Glycolysis_Processed_Results_10000_reps_w_CI_min_HK_PFK.csv",
-    # "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/042323_Glycolysis_Processed_Results_10000_reps_w_CI_min_HK_PFK_free_conc.csv",
-    # "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/$(Dates.format(now(),"mmddyy"))_Glycolysis_Processed_Results_w_CI.csv",
+    "Results/042023_SteadyState_Metabolites_at_ATPase_range_10000bootstraps_w_CI.csv",
     DataFrame,
 )
 Model_Result_bootstrap = Model_Result_bootstrap[:, Not(r"AMP")]
-Experimental_Data = CSV.read(
-    # "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Experimental data/Glycolysis Intermediate Concentrations.csv",
-    "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Experimental data/Intracellular concentrations of metabolites_combined_120622.csv",
-    DataFrame,
-)
+
+Experimental_Data = DataFrame(XLSX.readtable("Data/Data S1. Levels of enzymes, metabolites and isotope tracing.xlsx", "Metabolite concentrations"; infer_eltypes=true))
 
 ax1 = Axis(
     fig[2, 1:3],
@@ -306,32 +292,21 @@ band!(Model_Result_bootstrap.ATPase_Vmax_frac, Model_Result_bootstrap[:, "ATP_ql
 
 # Plot 13C-tracing of model vs data
 Tracing_Panel = fig[2, 4:6] = GridLayout()
+
 #Load Lactate data
 Lactate_Model_results = CSV.read(
-    # "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/050422_13C_lactate_labeling_w_CI.csv",
-    # "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/120422_13C_lactate_labeling_w_CI_0.15.csv",
-    # "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/122422_13C_lactate_labeling_w_CI_0.15.csv",
-    # "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/122722_13C_lactate_labeling_w_CI_0.15.csv",
-    "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/042023_13C_lactate_labeling_w_CI_0.15.csv",
+    "Results/042023_13C_lactate_labeling_w_CI_0.15.csv",
     DataFrame,
 );
-Lactate_Experimental_data = CSV.read(
-    "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Experimental data/Data summary_13C lactate tracing experiment.csv",
-    DataFrame,
-);
+Lactate_Experimental_data = DataFrame(XLSX.readtable("Data/Data S1. Levels of enzymes, metabolites and isotope tracing.xlsx", "13C Lactate tracing"; infer_eltypes=true))
+
 #Load Glucose data
 Glucose_Model_results = CSV.read(
-    # "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/050422_13C_glucose_labeling_w_CI.csv",
-    # "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/120422_13C_glucose_labeling_w_CI_0.15.csv",
-    # "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/122422_13C_glucose_labeling_w_CI_0.15.csv",
-    # "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/122722_13C_glucose_labeling_w_CI_0.15.csv",
-    "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/042023_13C_glucose_labeling_w_CI_0.15.csv",
+    "Results/042023_13C_glucose_labeling_w_CI_0.15.csv",
     DataFrame,
 );
-Glucose_Experimental_data = CSV.read(
-    "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Experimental data/Data summary_13C glucose tracing experiment_25 mM.csv",
-    DataFrame,
-);
+Glucose_Experimental_data = DataFrame(XLSX.readtable("Data/Data S1. Levels of enzymes, metabolites and isotope tracing.xlsx", "13C Glucose tracing"; infer_eltypes=true))
+
 
 Model_results = Glucose_Model_results
 Experimental_data = Glucose_Experimental_data
@@ -471,4 +446,5 @@ label_e = fig[2, 4, TopLeft()] = Label(fig, "E", fontsize = 12, halign = :right,
 
 fig
 
-# save("/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/$(Dates.format(now(),"mmddyy"))_Fig2_model_behavior_and_validation.png", fig, px_per_unit = 4)
+# uncomment the line below to save the plot
+# save("Results/$(Dates.format(now(),"mmddyy"))_Fig2_model_behavior_and_validation.png", fig, px_per_unit = 4)
