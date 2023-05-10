@@ -1,8 +1,8 @@
 # Glycolysis
 
-Package for modeling mammalian glycolysis activity
-See our [preprint](https://www.biorxiv.org/content/10.1101/2022.12.28.522046) for more examples of how to use this package
-Code to reproduce all figures in the preprint are in **Examples/** folder
+Package for modeling mammalian glycolysis activity.  
+See our [bioRxiv preprint](https://www.biorxiv.org/content/10.1101/2022.12.28.522046) for examples of how to use this package to study glycolysis regulation.  
+Code to reproduce all figures in the preprint are in _examples/biorxiv figures_ folder.  
 
 You can use it to simulate glycolysis using the following code:
 ```julia
