@@ -3,7 +3,7 @@ using DifferentialEquations
 using CairoMakie, Dates, Printf
 
 ##
-include("Teusink_2014_GlycolysisModel.jl")
+include("for_FigS2_Teusink2014Model.jl")
 # Precalculate output of Teusink model
 initial_concentrations = LVector(
     Glucose_media = 110e-3,
