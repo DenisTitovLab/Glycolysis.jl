@@ -1,6 +1,8 @@
 # Glycolysis
 
 Package for modeling mammalian glycolysis activity
+See our [preprint](https://www.biorxiv.org/content/10.1101/2022.12.28.522046) for more examples of how to use this package
+Code to reproduce all figures in the preprint are in **Examples/** folder
 
 You can use it to simulate glycolysis using the following code:
 ```julia
@@ -27,5 +29,3 @@ Legend(fig[1, 2], ax)
 fig
 ```
 <img src="https://user-images.githubusercontent.com/75404066/205350460-f73de619-14c3-42a4-95d7-7fa0d6e077ee.png" width="500">
-
-See **bioRxiv figures** folder for more examples of how to use this package
