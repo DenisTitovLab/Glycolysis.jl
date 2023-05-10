@@ -109,14 +109,8 @@ end
 # Plot results
 #Precalculate enzyme rates
 
-Geiger_data_summary = CSV.read(
-    "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/Cellular protein abundance data/Geiger_data_summary.csv",
-    DataFrame,
-)
-Geiger_LFQ_data_filtered = CSV.read(
-    "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/Cellular protein abundance data/Geiger_LFQ_data_filtered.csv",
-    DataFrame,
-)
+Geiger_data_summary = DataFrame(XLSX.readtable("Data/Data S1. Levels of enzymes, metabolites and isotope tracing.xlsx", "Enzyme concentrations"; infer_eltypes=true))
+
 glycolysis_enzymes_Vmax = [
     glycolysis_params.GLUT_Vmax,
     glycolysis_params.HK1_Vmax,
@@ -421,4 +415,5 @@ label_d = fig[2, 2, TopLeft()] = Label(fig, "D", fontsize = 12, halign = :right,
 
 fig
 
-# save("/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/$(Dates.format(now(),"mmddyy"))_Fig6_high_lower_glyc_and_Pi_pool_required_for_ATP_maintenance.png", fig, px_per_unit = 4)
+# uncomment the line below to save the plot
+# save("Results/$(Dates.format(now(),"mmddyy"))_Fig6_high_lower_glyc_and_Pi_pool_required_for_ATP_maintenance.png", fig, px_per_unit = 4)

@@ -396,7 +396,7 @@ no_allo_line_models_style = [0.5, 1, 1.5, 2] .* 2
 
 
 futile_cycle_schematic = load(
-    "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/My Articles/Glycolysis model paper/Figures/Glycolysis_schematic_futile_cycle.png",
+    "Glycolysis_schematic_futile_cycle.png",
 )
 
 ax_futile_cycle_schematic, im =
@@ -669,5 +669,6 @@ label_e = fig[2, 5, TopLeft()] = Label(fig, "E", fontsize = 12, halign = :right,
 
 fig
 
-# save("/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/$(Dates.format(now(),"mmddyy"))_Fig5_mechanism_of_ATP_maintenence_by_allost.png", fig, px_per_unit = 4)
+# uncomment the line below to save the plot
+# save("Results/$(Dates.format(now(),"mmddyy"))_Fig5_mechanism_of_ATP_maintenence_by_allost.png", fig, px_per_unit = 4)
 

@@ -88,5 +88,6 @@ lines!(
 colgap!(fig.layout, 10)
 fig
 
-# save("/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/$(Dates.format(now(),"mmddyy"))_Fig1_GPI_PFK_plots.png", fig, px_per_unit = 4)
+# uncomment the line below to save the plot
+# save("Results/$(Dates.format(now(),"mmddyy"))_Fig1_GPI_PFK_plots.png", fig, px_per_unit = 4)
 

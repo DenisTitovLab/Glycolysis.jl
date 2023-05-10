@@ -260,4 +260,6 @@ label_m = fig[3, 3, TopLeft()] = Label(fig, "M", fontsize = 12, halign = :right,
 label_n = fig[3, 4, TopLeft()] = Label(fig, "N", fontsize = 12, halign = :right, padding = (0, 7, -7, 0))
 
 fig
-# save("/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/$(Dates.format(now(),"mmddyy"))_Fig4_ATP_stability_wo_specific_reg.png", fig, px_per_unit = 4)
+
+# uncomment the line below to save the plot
+# save("Results/$(Dates.format(now(),"mmddyy"))_Fig4_ATP_stability_wo_specific_reg.png", fig, px_per_unit = 4)
