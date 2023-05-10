@@ -1,4 +1,4 @@
-include("MinimalGlycolysisModel_w_feedback.jl")
+include("for_Fig7_TwoEnzymeModel.jl")
 using OrdinaryDiffEq, CairoMakie, LabelledArrays
 using DataFrames, CSV, Dates
 using FileIO
@@ -167,7 +167,7 @@ end
 #Precalculate MC simulation of two enzyme model
 using Distributed
 addprocs(8; exeflags = "--project")
-@everywhere include("MinimalGlycolysisModel_w_feedback.jl")
+@everywhere include("for_Fig7_TwoEnzymeModel.jl")
 @everywhere using OrdinaryDiffEq
 
 using DataFrames, CSV, Dates
@@ -268,15 +268,15 @@ end
 #Plot results
 
 # Load simulation at a param range for histograms
-two_model_sims_res_df = CSV.read("042423_hist_two_enzyme_model_fixed_Km_10mM_Pi_10000_repeats.csv", DataFrame)
+two_model_sims_res_df = CSV.read("Results/042423_hist_two_enzyme_model_fixed_Km_10mM_Pi_10000_repeats.csv", DataFrame)
 # two_model_sims_res_df = CSV.read("$(Dates.format(now(),"mmddyy"))_hist_two_enzyme_model_fixed_Km_10mM_Pi_$(n_repeats)_repeats.csv", DataFrame)
 filter!(df -> df.Fract_success_sims == 1.0, two_model_sims_res_df)
 
 two_model_sims_res_df_no_allost_fixed_Pi =
-    CSV.read("042423_hist_two_enzyme_model_fixed_Km_10mM_Pi_no_allost_10000_repeats_fixed_Pi.csv", DataFrame)
+    CSV.read("Results/042423_hist_two_enzyme_model_fixed_Km_10mM_Pi_no_allost_10000_repeats_fixed_Pi.csv", DataFrame)
 filter!(df -> df.Fract_success_sims == 1.0, two_model_sims_res_df_no_allost_fixed_Pi)
 two_model_sims_res_df_no_allost =
-    CSV.read("042423_hist_two_enzyme_model_fixed_Km_10mM_Pi_no_allost_10000_repeats.csv", DataFrame)
+    CSV.read("Results/042423_hist_two_enzyme_model_fixed_Km_10mM_Pi_no_allost_10000_repeats.csv", DataFrame)
 filter!(df -> df.Fract_success_sims == 1.0, two_model_sims_res_df_no_allost)
 
 # Plot the results
@@ -693,4 +693,5 @@ label_h = fig[2, 10, TopLeft()] = Label(fig, "H", fontsize = 12, halign = :right
 
 fig
 
-# save("/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/$(Dates.format(now(),"mmddyy"))_Fig7_two_enzyme_model.png", fig, px_per_unit = 4)
+# uncomment the line below to save the plot
+# save("Results/$(Dates.format(now(),"mmddyy"))_Fig7_two_enzyme_model.png", fig, px_per_unit = 4)
