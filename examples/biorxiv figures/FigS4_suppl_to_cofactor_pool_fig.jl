@@ -3,6 +3,12 @@ using DifferentialEquations, ProgressMeter
 using CairoMakie, Dates, Printf, Statistics, StatsBase
 using DataFrames, CSV
 
+#= 
+Global sensitivity analysis (GSA) is a computationally intensive task that
+needs to performed on a computing cluster with many cores. Here we load the results
+of such a computation for plotting. The code to run this analysis on the cluster is 
+available in gsa_cluster_code/ folder.
+=#
 #Download sens indexes for init cond and pool sizes
 GSA_ATP_AUC_cofactor_pools_sens_ind =
     CSV.read("gsa_cluster_code/050723_ATP_AUC_gsa_sobol_cofactor_pool_20000_3x_range.csv", DataFrame)
@@ -508,9 +514,8 @@ label_a = fig[1, 1, TopLeft()] = Label(fig, "A", fontsize = 12, halign = :right,
 label_b = fig[1, 2, TopLeft()] = Label(fig, "B", fontsize = 12, halign = :right, padding = (0, 10, 5, 0))
 label_c = fig[2, 1, TopLeft()] = Label(fig, "C", fontsize = 12, halign = :right, padding = (0, 10, 5, 0))
 label_d = fig[2, 2, TopLeft()] = Label(fig, "D", fontsize = 12, halign = :right, padding = (0, 10, 5, 0))
-# label_e = fig[2, 2, TopLeft()] = Label(fig, "E", fontsize = 12, halign = :right, padding = (0, 10, -5, 0))
-# label_f = fig[2, 3, TopLeft()] = Label(fig, "F", fontsize = 12, halign = :right, padding = (0, 10, -5, 0))
-
 
 fig
-# save("/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/$(Dates.format(now(),"mmddyy"))_FigS4_gsa_and_sims_cofactor_pool_sizes.png", fig, px_per_unit = 4)
+
+# uncomment the line below to save the plot
+# save("Results/$(Dates.format(now(),"mmddyy"))_FigS4_gsa_and_sims_for_cofactor_pool_sizes.png", fig, px_per_unit = 4)

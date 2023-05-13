@@ -6,8 +6,8 @@ using DataFrames, CSV
 #= 
 Global sensitivity analysis (GSA) is a computationally intensive task that
 needs to performed on a computing cluster with many cores. Here we load the results
-of such a compilation. The code to run this analysis on the cluster is available in
-gsa_cluster_code/ folder.
+of such a computation for plotting. The code to run this analysis on the cluster is 
+available in gsa_cluster_code/ folder.
 =#
 ATP_AUC_data = CSV.read("gsa_cluster_code/050623_hist_ATP_AUC_10000runs_only_HK_PFK_Vmax.csv", DataFrame)
 ATP_energy_AUC_data =
