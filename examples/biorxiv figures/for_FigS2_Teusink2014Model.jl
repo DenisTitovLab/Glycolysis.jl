@@ -1,27 +1,6 @@
-cd(@__DIR__)
-using Pkg
-Pkg.activate(".")
-
 using LabelledArrays
-#=
-To do list
-
-- add params_SE that include SE specific for each parameter and implement bootstrapping using that
-- copy code one by one from archive and replot everything with Makie one by one in order of paper figures
-- add Km for products for PFKP and PKM2
-- Convert GAPDH to MWC enzyme
-- rename params to something else as it conflicts with too many other library params
-- use steady stade or rapid equilibrium approx to derive more accurate equations for non-WC enzyme
-
-=#
 
 # Define cellular parameters and kinetic+thermodynamic constants of enzymes
-
-# Probably should incorporate below into params
-water_fraction_cell_volume = 0.66
-cytosol_fraction_cell_volume = 0.66
-cell_volume_correction = water_fraction_cell_volume * cytosol_fraction_cell_volume
-cell_protein_density = 0.2 #mg/ul
 Vmax_normalizer = 20
 
 params = LVector(
@@ -151,7 +130,6 @@ if eltype(params) != Float64
 end
 
 #Rate equations for glycolytic enzymes
-
 function GLUT(Glucose_media, Glucose, params)
     Rate = (
         (params.GLUT_Vmax / params.GLUT_Km_Glucose_media) * (Glucose_media - Glucose) / (
@@ -347,15 +325,9 @@ function rate_ATPase(ATP, ADP, Phosphate, params)
         (ATP - ADP * Phosphate / params.ATPase_Keq)
     return Rate
 end
-# function rate_ATPase(ATP, ADP, Phosphate, params)
-#     Rate =
-#         (params.ATPase_Vmax)
-#     return Rate
-# end
 
 
 #Glycolysis Model ODE system
-
 function Glycolysis_ODEs(ds, s, params, t)
     ds.Glucose_media = 0
     ds.Glucose = GLUT(s.Glucose_media, s.Glucose, params) - HK1(s.Glucose, s.G6P, s.ATP, s.ADP, params)
