@@ -1,20 +1,21 @@
-# cd(@__DIR__)
-# using Pkg
-# Pkg.activate(".")
-# Pkg.resolve()
-# Pkg.instantiate()
+cd(@__DIR__)
+using Pkg
+Pkg.activate(".")
+Pkg.resolve()
+Pkg.instantiate()
 
-# using Distributed, ClusterManagers
+using Distributed, ClusterManagers
 
-# # ENV["SLURM_JOB_CPUS_PER_NODE"] give number of cores in "40(x4),32,20" format
-# # "40(x2),32,20" can be parsed to 132 using code below to get total number of allocated cores
+# ENV["SLURM_JOB_CPUS_PER_NODE"] give number of cores in "40(x4),32,20" format
+# "40(x2),32,20" can be parsed to 132 using code below to get total number of allocated cores
 
-# subs = Dict("x" => "*", "(" => "", ")" => "");
-# np = sum(eval(Meta.parse(replace(ENV["SLURM_JOB_CPUS_PER_NODE"], r"x|\(|\)" => s -> subs[s]))))
-# addprocs(SlurmManager(np); exeflags = "--project")
+subs = Dict("x" => "*", "(" => "", ")" => "");
+np = sum(eval(Meta.parse(replace(ENV["SLURM_JOB_CPUS_PER_NODE"], r"x|\(|\)" => s -> subs[s]))))
+addprocs(SlurmManager(np); exeflags = "--project")
 
-using Distributed
-addprocs(8; exeflags = "--project")
+# comment all lines above and uncomment two line below if running on local computer
+# using Distributed
+# addprocs(8; exeflags = "--project")
 
 @everywhere using Glycolysis
 @everywhere using DifferentialEquations
@@ -94,7 +95,7 @@ function parallel_output(p, glycolysis_params, glycolysis_init_conc, n_Vmax_ATPa
 end
 
 ##
-using CairoMakie, Statistics
+# Calculate data for histogram of variance
 fold_range = 3
 n_Vmax_ATPase_values = 100
 n_bootstrap = 10_000
@@ -102,11 +103,7 @@ res = pmap(
     x -> glycolysis_output(x, glycolysis_params, glycolysis_init_conc, n_Vmax_ATPase_values),
     [sqrt(fold_range) .^ (-2 .+ 4 * rand(length(glycolysis_params))) for i = 1:n_bootstrap],
 )
-
-using CSV
 CSV.write("$(Dates.format(now(),"mmddyy"))_hist_ATP_energy_AUC_$(n_bootstrap)runs_only_HK_PFK_Vmax.csv", DataFrame(all_params = res))
-print(std(res)/mean(res))
-hist(res, bins=50)
 ##
 
 # generate design matrices
@@ -134,7 +131,7 @@ push!(df, merge((Row = "S1",), convert(NamedTuple, S1_labelled)))
 push!(df, merge((Row = "ST",), convert(NamedTuple, ST_labelled)))
 
 CSV.write(
-    "/global/home/users/titov/gsa_cluster_code/$(Dates.format(now(),"mmddyy"))_ATPase_energy_AUC_gsa_sobol_$(n_bootstrap)_3x_range_HK_PFK_Vmax.csv",
+    "$(Dates.format(now(),"mmddyy"))_ATPase_energy_AUC_gsa_sobol_$(n_bootstrap)_3x_range_HK_PFK_Vmax.csv",
     df,
 )
 

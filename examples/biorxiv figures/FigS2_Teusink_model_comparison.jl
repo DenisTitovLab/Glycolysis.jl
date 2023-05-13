@@ -77,31 +77,6 @@ teusink_model_ATPase_rate[sol.t.>ATPase_change_time1.&&sol.t.<ATPase_change_time
 teusink_model_ATPase_rate[sol.t.>ATPase_change_time2.&&sol.t.<ATPase_change_time3] .= Low_ATPase_Vmax_frac
 teusink_model_ATP = [conc.ATP for conc in sol.u]
 
-
-# Precalculate output of our model
-# initial_concentrations = LVector(
-#     Glucose_media = 25e-3,
-#     Glucose = 6.12e-3 / cell_volume_correction,
-#     G6P = 1.73e-4 / cell_volume_correction,
-#     F6P = 8.17e-5 / cell_volume_correction,
-#     F16BP = 8.75e-4 / cell_volume_correction,
-#     GAP = 1.12e-4 / cell_volume_correction,
-#     DHAP = 7.19e-4 / cell_volume_correction,
-#     BPG = 1.3e-6 / cell_volume_correction,
-#     ThreePG = 2.21e-4 / cell_volume_correction,
-#     TwoPG = 2.01e-5 / cell_volume_correction,
-#     PEP = 4.29e-5 / cell_volume_correction,
-#     Pyruvate = 6.77e-4 / cell_volume_correction,
-#     Lactate = 2.74e-3 / cell_volume_correction,
-#     Lactate_media = 0.0 / cell_volume_correction,
-#     ATP = 3.32e-3 / cell_volume_correction,
-#     ADP = 3.96e-4 / cell_volume_correction,
-#     AMP = 9.41e-5 / cell_volume_correction,
-#     Phosphate = 1e-3 / cell_volume_correction,
-#     NAD = 0.346e-3 / cell_volume_correction,
-#     NADH = 3.58e-5 / cell_volume_correction,
-#     F26BP = 0.0 / cell_volume_correction,
-# )
 glycolysis_params.ATPase_Vmax =
     Initial_ATPase_Vmax_frac * 2 * glycolysis_params.HK1_Conc * glycolysis_params.HK1_Vmax
 glycolysis_params.ATPase_Km_ATP = 1e-9
@@ -340,6 +315,7 @@ label_c = fig[1, 3, TopLeft()] = Label(fig, "C", fontsize = 12, halign = :right,
 
 fig
 
-# save("/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/$(Dates.format(now(),"mmddyy"))_Fig_S2_Teusink_model_comparison.png", fig, px_per_unit = 4)
+# uncomment the line below to save the plot
+# save("Results/$(Dates.format(now(),"mmddyy"))_FigS2_Teusink_model_comparison.png", fig, px_per_unit = 4)
 
 

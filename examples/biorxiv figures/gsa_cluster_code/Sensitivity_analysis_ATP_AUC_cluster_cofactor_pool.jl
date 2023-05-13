@@ -13,6 +13,7 @@ subs = Dict("x" => "*", "(" => "", ")" => "");
 np = sum(eval(Meta.parse(replace(ENV["SLURM_JOB_CPUS_PER_NODE"], r"x|\(|\)" => s -> subs[s]))))
 addprocs(SlurmManager(np); exeflags = "--project")
 
+# comment all lines above and uncomment two line below if running on local computer
 # using Distributed
 # addprocs(8; exeflags = "--project")
 
@@ -83,19 +84,17 @@ function parallel_output(p, glycolysis_params, glycolysis_init_conc, n_Vmax_ATPa
 end
 
 
-# ##
-# using CairoMakie
-# fold_range = 3
-# n_Vmax_ATPase_values = 100
-# n_bootstrap = 10_000
-# res = @time pmap(
-#     x -> glycolysis_output(x, glycolysis_params, glycolysis_init_conc, n_Vmax_ATPase_values),
-#     [sqrt(fold_range) .^ (-2 .+ 4 * rand(3)) for i = 1:n_bootstrap],
-# ) 
-# using CSV
-# CSV.write("$(Dates.format(now(),"mmddyy"))_hist_ATP_AUC_$(n_bootstrap)_runs_3x_pool_sizes.csv", DataFrame(all_params = res))
-# hist(res, bins = Base.range(0.0, 1.0, 50))
-# ##
+##
+# Calculate data for histogram of variance
+fold_range = 3
+n_Vmax_ATPase_values = 100
+n_bootstrap = 10_000
+res = @time pmap(
+    x -> glycolysis_output(x, glycolysis_params, glycolysis_init_conc, n_Vmax_ATPase_values),
+    [sqrt(fold_range) .^ (-2 .+ 4 * rand(3)) for i = 1:n_bootstrap],
+) 
+CSV.write("$(Dates.format(now(),"mmddyy"))_hist_ATP_AUC_$(n_bootstrap)_runs_3x_pool_sizes.csv", DataFrame(all_params = res))
+##
 
 # generate design matrices
 n_bootstrap = 20_000 #number of bootstrapped datasets to use
@@ -122,7 +121,7 @@ push!(df, merge((Row = "S1",), convert(NamedTuple, S1_labelled)))
 push!(df, merge((Row = "ST",), convert(NamedTuple, ST_labelled)))
 
 CSV.write(
-    "/global/home/users/titov/gsa_cluster_code/$(Dates.format(now(),"mmddyy"))_ATP_AUC_gsa_sobol_cofactor_pool_$(n_bootstrap)_3x_range.csv",
+    "$(Dates.format(now(),"mmddyy"))_ATP_AUC_gsa_sobol_cofactor_pool_$(n_bootstrap)_3x_range.csv",
     df,
 )
 

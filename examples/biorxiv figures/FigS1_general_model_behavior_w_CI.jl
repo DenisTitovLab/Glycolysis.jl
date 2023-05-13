@@ -1,3 +1,6 @@
+# it take about 3 min to run this code on 8-core computer
+# the code is parallelized so the time will scale with the number of CPU cores
+
 using Glycolysis, Revise
 using DifferentialEquations
 using CairoMakie, DataFrames, Dates, Printf, CSV, Statistics
@@ -102,6 +105,8 @@ bootstrap_glycolysis_params = [
     rand.(truncated.(Normal.(glycolysis_params, glycolysis_params_uncertainty); lower = 0.0)) for
     i = 1:number_boostraps
 ]
+
+# next line take about 1 min to execute on an 8-core computer
 bootstrap_param_step_response_list = @showprogress "Computing Parameters Sensitivity" pmap(
     x -> glyc_step_response(x, glycolysis_init_conc),
     bootstrap_glycolysis_params,
@@ -139,6 +144,8 @@ for i = 1:number_boostraps
         sqrt(fold_range) .^ (-2 .+ 4 * rand()) * glycolysis_params.MCT_Conc
     push!(bootstrap_enzyme_conc, var_enzyme_glycolysis_params)
 end
+
+# next line take about 0.5 min to execute on an 8-core computer
 bootstrap_enzyme_conc_step_response_list = @showprogress "Computing Enzyme Level Sensitivity" pmap(
     x -> glyc_step_response(x, glycolysis_init_conc),
     bootstrap_enzyme_conc,
@@ -157,6 +164,7 @@ bootstrap_init_cond = [
     ) for i = 1:number_boostraps
 ]
 
+# next line take about 0.5 min to execute on an 8-core computer
 bootstrap_init_cond_step_response_list = @showprogress "Computing Initial Conditions Sensitivity" pmap(
     x -> glyc_step_response(glycolysis_params, x),
     bootstrap_init_cond,
@@ -833,6 +841,6 @@ label_i = fig[3, 5, TopLeft()] = Label(fig, "I", fontsize = 12, halign = :right,
 
 
 fig
-
-# save("/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/$(Dates.format(now(),"mmddyy"))_FigS1_model_behavior_and_validation_w_CI.png", fig, px_per_unit = 4)
+# uncomment the line below to save the plot
+# save("Results/$(Dates.format(now(),"mmddyy"))_FigS1_model_behavior_and_validation_w_CI.png", fig, px_per_unit = 4)
 

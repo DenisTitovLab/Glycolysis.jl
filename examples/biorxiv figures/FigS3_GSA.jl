@@ -3,12 +3,12 @@ using DifferentialEquations, ProgressMeter
 using CairoMakie, Dates, Printf, Statistics, StatsBase
 using DataFrames, CSV
 
-
-# ATP_AUC_data = CSV.read("gsa_cluster_code/111522_hist_ATP_AUC_10K_only_HK_PFK_Vmax.csv", DataFrame)
-# ATP_energy_AUC_data =
-#     CSV.read("gsa_cluster_code/111522_hist_ATP_energy_AUC_10K_only_HK_PFK_Vmax.csv", DataFrame)
-# ATP_prod_AUC_data = CSV.read("gsa_cluster_code/111522_hist_ATP_prod_AUC_10K_only_HK_PFK_Vmax.csv", DataFrame)
-
+#= 
+Global sensitivity analysis (GSA) is a computationally intensive task that
+needs to performed on a computing cluster with many cores. Here we load the results
+of such a computation for plotting. The code to run this analysis on the cluster is 
+available in gsa_cluster_code/ folder.
+=#
 ATP_AUC_data = CSV.read("gsa_cluster_code/050623_hist_ATP_AUC_10000runs_only_HK_PFK_Vmax.csv", DataFrame)
 ATP_energy_AUC_data =
     CSV.read("gsa_cluster_code/050623_hist_ATP_energy_AUC_10000runs_only_HK_PFK_Vmax.csv", DataFrame)
@@ -17,12 +17,6 @@ ATP_prod_AUC_data = CSV.read("gsa_cluster_code/050623_hist_ATP_prod_AUC_10K_only
 std(ATP_AUC_data.all_params) / mean(ATP_AUC_data.all_params)
 std(ATP_energy_AUC_data.all_params) / mean(ATP_energy_AUC_data.all_params)
 std(ATP_prod_AUC_data.all_params) / mean(ATP_prod_AUC_data.all_params)
-
-# ATP_AUC_Sens_Ind = CSV.read("gsa_cluster_code/111522_ATP_AUC_gsa_sobol_sens_ind_HK_PFK_Vmax.csv", DataFrame)
-# ATP_energy_AUC_Sens_Ind =
-#     CSV.read("gsa_cluster_code/111522_ATP_energy_AUC_gsa_sobol_sens_ind_HK_PFK_Vmax.csv", DataFrame)
-# ATP_prod_AUC_Sens_Ind =
-#     CSV.read("gsa_cluster_code/111522_ATP_prod_AUC_gsa_sobol_sens_ind_HK_PFK_Vmax.csv", DataFrame)
 
 ATP_AUC_Sens_Ind = CSV.read("gsa_cluster_code/050723_ATP_AUC_gsa_sobol_sens_ind_HK_PFK_Vmax.csv", DataFrame)
 ATP_energy_AUC_Sens_Ind =
@@ -307,10 +301,8 @@ label_c = fig[1, 3, TopLeft()] = Label(fig, "C", fontsize = 12, halign = :right,
 label_d = fig[2, 1, TopLeft()] = Label(fig, "D", fontsize = 12, halign = :right, padding = (0, 15, 5, 0))
 label_e = fig[2, 2, TopLeft()] = Label(fig, "E", fontsize = 12, halign = :right, padding = (0, 10, 5, 0))
 label_f = fig[2, 3, TopLeft()] = Label(fig, "F", fontsize = 12, halign = :right, padding = (0, 10, 5, 0))
-# label_g = fig[3, 1, TopLeft()] = Label(fig, "G", fontsize = 12, halign = :right, padding = (0, 15, 5, 0))
-# label_h = fig[3, 3, TopLeft()] = Label(fig, "H", fontsize = 12, halign = :right, padding = (0, 10, 5, 0))
-# label_i = fig[3, 5, TopLeft()] = Label(fig, "I", fontsize = 12, halign = :right, padding = (0, 15, 5, 0))
 
 fig
 
-# save("/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/Research Projects/Glycolysis Model/JuliaGlycolysisModel/Results data and figures/$(Dates.format(now(),"mmddyy"))_FigS3_global_sens_analysis_ATP_level_energy_prod.png", fig, px_per_unit = 4)
+# uncomment the line below to save the plot
+# save("Results/$(Dates.format(now(),"mmddyy"))_FigS3_global_sensitivity_analysis.png", fig, px_per_unit = 4)
