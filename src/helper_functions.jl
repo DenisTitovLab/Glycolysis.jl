@@ -148,9 +148,9 @@ function free_to_total_conc(f, params)
     b.Citrate = (binding_PFKP(f.F6P, f.ATP, f.F16BP, f.ADP, f.Phosphate, f.Citrate, f.F26BP, params).Citrate)
     b.Phenylalanine =
         (binding_PKM2(f.PEP, f.ADP, f.Pyruvate, f.ATP, f.F16BP, f.Phenylalanine, params).Phenylalanine)
-    total = (b + f) .* cell_volume_correction
-    total.Glucose_media /= cell_volume_correction
-    total.Lactate_media /= cell_volume_correction
+    total = (b + f)
+    total.Glucose_media
+    total.Lactate_media
     return total
 end
 
