@@ -36,21 +36,28 @@ function glycolysis_ODEs(ds, s, params, t)
         rate_PFKP(s.F6P, s.ATP, s.F16BP, s.ADP, s.Phosphate, s.Citrate, s.F26BP, params) +
         rate_PGK(s.BPG, s.ADP, s.ATP, s.ThreePG, params) +
         rate_PKM2(s.PEP, s.ADP, s.Pyruvate, s.ATP, s.F16BP, s.Phenylalanine, params) -
-        rate_ATPase(s.ATP, s.ADP, s.Phosphate, params) + rate_AK(s.ATP, s.ADP, s.AMP, params)
+        rate_ATPase(s.ATP, s.ADP, s.Phosphate, params) + rate_AK(s.ATP, s.ADP, s.AMP, params) -
+        rate_NDPK(s.NTP, s.NDP, s.ATP, s.ADP, params) -
+        rate_CK(s.Phosphocreatine, s.Creatine, s.ATP, s.ADP, params)
     )
     ds.ADP = (
         rate_HK1(s.Glucose, s.G6P, s.ATP, s.Phosphate, s.ADP, params) +
         rate_PFKP(s.F6P, s.ATP, s.F16BP, s.ADP, s.Phosphate, s.Citrate, s.F26BP, params) -
         rate_PGK(s.BPG, s.ADP, s.ATP, s.ThreePG, params) -
         rate_PKM2(s.PEP, s.ADP, s.Pyruvate, s.ATP, s.F16BP, s.Phenylalanine, params) +
-        rate_ATPase(s.ATP, s.ADP, s.Phosphate, params) - 2 * rate_AK(s.ATP, s.ADP, s.AMP, params)
+        rate_ATPase(s.ATP, s.ADP, s.Phosphate, params) - 2 * rate_AK(s.ATP, s.ADP, s.AMP, params) +
+        rate_NDPK(s.NTP, s.NDP, s.ATP, s.ADP, params) +
+        rate_CK(s.Phosphocreatine, s.Creatine, s.ATP, s.ADP, params)
     )
     ds.AMP = rate_AK(s.ATP, s.ADP, s.AMP, params)
     ds.Phosphate =
         rate_ATPase(s.ATP, s.ADP, s.Phosphate, params) -
         rate_GAPDH(s.GAP, s.NAD, s.Phosphate, s.BPG, s.NADH, params)
     #ds.Phosphate = 0
-
+    ds.NTP = rate_NDPK(s.NTP, s.NDP, s.ATP, s.ADP, params)
+    ds.NDP = -rate_NDPK(s.NTP, s.NDP, s.ATP, s.ADP, params)
+    ds.Phosphocreatine = rate_CK(s.Phosphocreatine, s.Creatine, s.ATP, s.ADP, params)
+    ds.Creatine = -rate_CK(s.Phosphocreatine, s.Creatine, s.ATP, s.ADP, params)
     ds.NAD =
         rate_LDH(s.Pyruvate, s.NADH, s.NAD, s.Lactate, params) -
         rate_GAPDH(s.GAP, s.NAD, s.Phosphate, s.BPG, s.NADH, params)

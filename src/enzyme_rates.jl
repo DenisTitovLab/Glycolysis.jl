@@ -316,6 +316,36 @@ function rate_AK(ATP, ADP, AMP, params)
     return Rate
 end
 
+function rate_NDPK(NTP, NDP, ATP, ADP, params)
+    Rate = (
+        (params.NDPK_Vmax / (params.NDPK_Km_ATP * params.NDPK_Km_NDP)) * (
+            (ATP * NDP - (1 / params.NDPK_Keq) * (NTP * ADP)) / (
+                1 +
+                ATP / params.NDPK_Km_ATP +
+                ADP / params.NDPK_Km_ADP +
+                NTP / params.NDPK_Km_NTP +
+                NDP / params.NDPK_Km_NDP
+            )
+        )
+    )
+    return Rate
+end
+
+function rate_CK(Phosphocreatine, Creatine, ATP, ADP, params)
+    Rate = (
+        (params.CK_Vmax / (params.CK_Km_ATP * params.CK_Km_Creatine)) * (
+            (ATP * Creatine - (1 / params.CK_Keq) * (Phosphocreatine * ADP)) / (
+                1 +
+                ATP / params.CK_Km_ATP +
+                ADP / params.CK_Km_ADP +
+                Phosphocreatine / params.CK_Km_Phosphocreatine +
+                Creatine / params.CK_Km_Creatine
+            )
+        )
+    )
+    return Rate
+end
+
 function rate_ATPase(ATP, ADP, Phosphate, params)
     Rate =
         (params.ATPase_Vmax / params.ATPase_Km_ATP) *
