@@ -36,7 +36,8 @@ function conc_to_rates(s, params)
         rate_PFKP(s.F6P, s.ATP, s.F16BP, s.ADP, s.Phosphate, s.Citrate, s.F26BP, params) +
         rate_PGK(s.BPG, s.ADP, s.ATP, s.ThreePG, params) +
         rate_PKM2(s.PEP, s.ADP, s.Pyruvate, s.ATP, s.F16BP, s.Phenylalanine, params) +
-        rate_AK(s.ATP, s.ADP, s.AMP, params)
+        rate_AK(s.ATP, s.ADP, s.AMP, params) - rate_NDPK(s.NTP, s.NDP, s.ATP, s.ADP, params) -
+        rate_CK(s.Phosphocreatine, s.Creatine, s.ATP, s.ADP, params)
     )
     r.ATPase = rate_ATPase(s.ATP, s.ADP, s.Phosphate, params)
     return r
