@@ -23,7 +23,7 @@ fig = Figure()
 ax = Axis(fig[1, 1], yscale = log10, xlabel = "Time, min", ylabel = "[Metabolite], M")
 #Substitute :ATP, :ADP, :Phosphate for any metabolite(s) from propertynames(glycolysis_init_conc)
 for metabolite in [:ATP, :ADP, :Phosphate]
-    lines!(ax, sol.t, sol[metabolite, :], label = String(metabolite))
+    lines!(ax, sol.t, [u[metabolite] for u in sol.u], label = String(metabolite))
 end
 Legend(fig[1, 2], ax)
 fig
