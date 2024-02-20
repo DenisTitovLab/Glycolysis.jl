@@ -261,15 +261,11 @@ function rate_PKM2(PEP, ADP, Pyruvate, ATP, F16BP, Phenylalanine, params)
         params.PKM2_Conc *
         (ADP * PEP - ATP * Pyruvate / params.PKM2_Keq) *
         (
-            (
-                params.PKM2_Vmax_a * (1.0 / params.PKM2_K_a_PEP) * (1.0 / params.PKM2_K_ADP)
-            ) *
+            (params.PKM2_Vmax_a * (1.0 / params.PKM2_K_a_PEP) * (1.0 / params.PKM2_K_ADP)) *
             (Z_a_cat^3) *
             (Z_a_reg^4) +
             params.PKM2_L *
-            (
-                params.PKM2_Vmax_i * (1.0 / params.PKM2_K_i_PEP) * (1.0 / params.PKM2_K_ADP)
-            ) *
+            (params.PKM2_Vmax_i * (1.0 / params.PKM2_K_i_PEP) * (1.0 / params.PKM2_K_ADP)) *
             (Z_i_cat^3) *
             (Z_i_reg^4)
         ) / ((Z_a_cat^4) * (Z_a_reg^4) + params.PKM2_L * (Z_i_cat^4) * (Z_i_reg^4))
@@ -320,11 +316,8 @@ function rate_NDPK(NTP, NDP, ATP, ADP, params)
     Rate = (
         (params.NDPK_Vmax / (params.NDPK_Km_ATP * params.NDPK_Km_NDP)) * (
             (ATP * NDP - (1 / params.NDPK_Keq) * (NTP * ADP)) / (
-                1 +
-                ATP / params.NDPK_Km_ATP +
-                ADP / params.NDPK_Km_ADP +
-                NTP / params.NDPK_Km_NTP +
-                NDP / params.NDPK_Km_NDP
+                (1 + ATP / params.NDPK_Km_ATP + ADP / params.NDPK_Km_ADP) *
+                (1 + NTP / params.NDPK_Km_NTP + NDP / params.NDPK_Km_NDP)
             )
         )
     )
@@ -335,11 +328,8 @@ function rate_CK(Phosphocreatine, Creatine, ATP, ADP, params)
     Rate = (
         (params.CK_Vmax / (params.CK_Km_ATP * params.CK_Km_Creatine)) * (
             (ATP * Creatine - (1 / params.CK_Keq) * (Phosphocreatine * ADP)) / (
-                1 +
-                ATP / params.CK_Km_ATP +
-                ADP / params.CK_Km_ADP +
-                Phosphocreatine / params.CK_Km_Phosphocreatine +
-                Creatine / params.CK_Km_Creatine
+                (1 + ATP / params.CK_Km_ATP + ADP / params.CK_Km_ADP) *
+                (1 + Phosphocreatine / params.CK_Km_Phosphocreatine + Creatine / params.CK_Km_Creatine)
             )
         )
     )
