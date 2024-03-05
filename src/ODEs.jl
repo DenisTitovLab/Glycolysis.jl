@@ -4,8 +4,8 @@ function glycolysis_ODEs(ds, s, params, t)
     ds.Glucose_media = 0.0
     ds.Glucose =
         rate_GLUT(s.Glucose_media, s.Glucose, params) -
-        rate_HK1(s.Glucose, s.G6P, s.ATP, s.Phosphate, s.ADP, params)
-    ds.G6P = rate_HK1(s.Glucose, s.G6P, s.ATP, s.Phosphate, s.ADP, params) - rate_GPI(s.G6P, s.F6P, params)
+        rate_HK1(s.Glucose, s.G6P, s.ATP, s.ADP, s.Phosphate, params)
+    ds.G6P = rate_HK1(s.Glucose, s.G6P, s.ATP, s.ADP, s.Phosphate, params) - rate_GPI(s.G6P, s.F6P, params)
     ds.F6P = (
         rate_GPI(s.G6P, s.F6P, params) -
         rate_PFKP(s.F6P, s.ATP, s.F16BP, s.ADP, s.Phosphate, s.Citrate, s.F26BP, params)
@@ -32,7 +32,7 @@ function glycolysis_ODEs(ds, s, params, t)
         rate_LDH(s.Pyruvate, s.NADH, s.NAD, s.Lactate, params) - rate_MCT(s.Lactate, s.Lactate_media, params)
     ds.Lactate_media = 0.0
     ds.ATP = (
-        -rate_HK1(s.Glucose, s.G6P, s.ATP, s.Phosphate, s.ADP, params) -
+        -rate_HK1(s.Glucose, s.G6P, s.ATP, s.ADP, s.Phosphate, params) -
         rate_PFKP(s.F6P, s.ATP, s.F16BP, s.ADP, s.Phosphate, s.Citrate, s.F26BP, params) +
         rate_PGK(s.BPG, s.ADP, s.ATP, s.ThreePG, params) +
         rate_PKM2(s.PEP, s.ADP, s.Pyruvate, s.ATP, s.F16BP, s.Phenylalanine, params) -
@@ -41,7 +41,7 @@ function glycolysis_ODEs(ds, s, params, t)
         rate_CK(s.Phosphocreatine, s.Creatine, s.ATP, s.ADP, params)
     )
     ds.ADP = (
-        rate_HK1(s.Glucose, s.G6P, s.ATP, s.Phosphate, s.ADP, params) +
+        rate_HK1(s.Glucose, s.G6P, s.ATP, s.ADP, s.Phosphate, params) +
         rate_PFKP(s.F6P, s.ATP, s.F16BP, s.ADP, s.Phosphate, s.Citrate, s.F26BP, params) -
         rate_PGK(s.BPG, s.ADP, s.ATP, s.ThreePG, params) -
         rate_PKM2(s.PEP, s.ADP, s.Pyruvate, s.ATP, s.F16BP, s.Phenylalanine, params) +
