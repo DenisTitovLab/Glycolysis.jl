@@ -19,7 +19,7 @@ function conc_to_rates(s, params)
         :ATPase,
     )
     r.GLUT = rate_GLUT(s.Glucose_media, s.Glucose, params)
-    r.HK1 = rate_HK1(s.Glucose, s.G6P, s.ATP, s.Phosphate, s.ADP, params)
+    r.HK1 = rate_HK1(s.Glucose, s.G6P, s.ATP, s.ADP, s.Phosphate, params)
     r.GPI = rate_GPI(s.G6P, s.F6P, params)
     r.PFKP = rate_PFKP(s.F6P, s.ATP, s.F16BP, s.ADP, s.Phosphate, s.Citrate, s.F26BP, params)
     r.ALDO = rate_ALDO(s.F16BP, s.GAP, s.DHAP, params)
@@ -32,7 +32,7 @@ function conc_to_rates(s, params)
     r.LDH = rate_LDH(s.Pyruvate, s.NADH, s.NAD, s.Lactate, params)
     r.MCT = rate_MCT(s.Lactate, s.Lactate_media, params)
     r.ATPprod = (
-        -rate_HK1(s.Glucose, s.G6P, s.ATP, s.Phosphate, s.ADP, params) -
+        -rate_HK1(s.Glucose, s.G6P, s.ATP, s.ADP, s.Phosphate, params) -
         rate_PFKP(s.F6P, s.ATP, s.F16BP, s.ADP, s.Phosphate, s.Citrate, s.F26BP, params) +
         rate_PGK(s.BPG, s.ADP, s.ATP, s.ThreePG, params) +
         rate_PKM2(s.PEP, s.ADP, s.Pyruvate, s.ATP, s.F16BP, s.Phenylalanine, params) +
