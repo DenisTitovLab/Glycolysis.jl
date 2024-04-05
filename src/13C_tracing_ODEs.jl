@@ -1,5 +1,7 @@
+using LabelledArrays
+
 function glycolysis_13C_tracing_ODEs(ds, s, params, t)
-    total_conc_larray = LArrays((
+    total_conc_larray = LVector((
         Glucose_media = s.Glucose_media_12C + s.Glucose_media_13C,
         Glucose = s.Glucose_12C + s.Glucose_13C,
         G6P = s.G6P_12C + s.G6P_13C,
