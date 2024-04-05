@@ -353,6 +353,7 @@ function rate_isotope_tracing_PKM2(metabs, params, isotope::Symbol)
     PEP = metabs.PEP_12C + metabs.PEP_13C
     Pyruvate = metabs.Pyruvate_12C + metabs.Pyruvate_13C
     F16BP = metabs.F16BP_12C + metabs.F16BP_13C
+    Phenylalanine = metabs.Phenylalanine_12C + metabs.Phenylalanine_13C
 
     Z_a_cat = (
         1 +
