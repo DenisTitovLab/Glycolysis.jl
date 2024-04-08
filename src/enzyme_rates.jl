@@ -4,18 +4,22 @@
 =#
 
 """
-    rate_GLUT(metabs.Glucose_media, metabs.Glucose, glycolysis_params)
+    rate_GLUT(metabs, params)
 
-Calculate rate (M/s units) of GLUT transporter from concentrations (M units) of `metabs.Glucose_media` and `metabs.Glucose`
+Calculate rate (M/s units) of GLUT transporter from concentrations (M units) of `Glucose_media` and `Glucose` according to the following equation:
+
+```math
+Rate = \frac{{V_{max} \cdot Conc}}{{K_{M}^{Glucose}}} \cdot \frac{{Glucose_{media} - \frac{1}{K_{eq}} \cdot Glucose}}{1 + \frac{Glucose_{media}}{K_{M}^{Glucose}} + \frac{Glucose}{K_{M}^{Glucose}}}
+```
 
 # Arguments
-- `params::LArray`: kinetic parameters of GLUT. Glycolysis.jl exports LArray `glycolysis_params` that contains kinetic parameters of all glycolytic enzymes.
+- `metabs`: LArray or NamedTuple and struct that contains fields Glucose_media, Glucose with corresponding metabolite concentrations of GLUT substrates and products. Glycolysis.jl exports LArray `glycolysis_init_cond` that contains estimates of cellular metabolite concentrations.
+- `params`: LArray or NamedTuple and struct of kinetic parameters of GLUT. Glycolysis.jl exports LArray `glycolysis_params` that contains kinetic parameters of all glycolytic enzymes.
 
 # Example
 ```julia-repl
-julia> metabs.Glucose_media, metabs.Glucose = 25e-3, 8e-3
-(0.025, 0.008)
-julia> Glycolysis.rate_GLUT(metabs.Glucose_media, metabs.Glucose, glycolysis_params)
+julia> metabs = (Glucose_media = 25e-3, Glucose = 8e-3,)
+julia> Glycolysis.rate_GLUT(metabs, glycolysis_params)
 0.02267962645321136
 ```
 """
