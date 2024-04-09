@@ -153,7 +153,7 @@ function rate_GAPDH(metabs, params)
         metabs.NADH / params.GAPDH_K_i_NADH * (
             1 +
             metabs.GAP / params.GAPDH_K_GAP * (1 + metabs.Phosphate / params.GAPDH_K_i_Phosphate) +
-            metabs.BPG / (params.GAPDH_α_i_BPG * params.GAPDH_K_BPG)
+            params.GAPDH_β_i_BPG * metabs.BPG / params.GAPDH_K_BPG
         )
 
     Rate = (
