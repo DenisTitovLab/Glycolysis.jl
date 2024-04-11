@@ -2,7 +2,7 @@ using LabelledArrays, Measurements
 
 #=
 This file contains all the parameters needed to run Glycolysis.jl including
-kinetic constants, thermodynamic constants, enzyme concentrations, initial 
+kinetic constants, thermodynamic constants, enzyme concentrations, initial
 conditions for ODE simulations (i.e., estimates of intracellular concentration of metabolites),
 and various constants for unit convertions.
 
@@ -21,7 +21,7 @@ water_fraction_cell_volume = 0.66
 cytosol_fraction_cell_volume = 0.66
 
 """
-Correction for cytosolic volume and its water content to better estimate concentration of 
+Correction for cytosolic volume and its water content to better estimate concentration of
 cytosolic molecules from total cellular concentration and vice versa
 """
 cell_volume_correction = water_fraction_cell_volume * cytosol_fraction_cell_volume
@@ -163,19 +163,19 @@ MW - g / mole /1000
 ###########################################################################################
 
 """
-Mean ± SEM of kinetic and thermodynamic parameters for enzyme rate equations.  
-Use `propertynames(glycolysis_params_w_uncertainty)` for list of all parameters given  
-as "EnzymeGeneName_ParameterName".  
-  
-    Parameters have the following units:  
-    K - M  
-    β - unitless  
-    Vmax - µmol/min per mg protein or U per mg  
-    Keq - depends on reaction stoichiometry  
-    Conc - mg protein/ul of cytosolic volume (converted from mg protein/mg proteome)  
-    Conc⋅Vmax - M/min  
-    Keq - either unitless or concentration  
-    MW - g / mole /1000  
+Mean ± SEM of kinetic and thermodynamic parameters for enzyme rate equations.
+Use `propertynames(glycolysis_params_w_uncertainty)` for list of all parameters given
+as "EnzymeGeneName_ParameterName".
+
+    Parameters have the following units:
+    K - M
+    β - unitless
+    Vmax - µmol/min per mg protein or U per mg
+    Keq - depends on reaction stoichiometry
+    Conc - mg protein/ul of cytosolic volume (converted from mg protein/mg proteome)
+    Conc⋅Vmax - M/min
+    Keq - either unitless or concentration
+    MW - g / mole /1000
 """
 glycolysis_params_w_uncertainty = LVector(
     GLUT_Km_Glucose = 20e-3 ± 4e-3,
@@ -231,19 +231,19 @@ glycolysis_params_w_uncertainty = LVector(
     TPI_Vmax = 6600.0 ± 800.0,
     TPI_Keq = 0.0045 ± 0.0024,
     TPI_MW = 26669.0 / 1000,
-    GAPDH_L = 1.6 ± 0.3,
+    GAPDH_L = 2.9 ± 1.7,
     GAPDH_K_GAP = 1.7e-6 ± 0.1e-6,
-    GAPDH_K_a_NAD = 83e-6 ± 5e-6,
-    GAPDH_K_i_NAD = 180e-6 ± 20e-6,
-    GAPDH_K_a_Phosphate = 1.9e-3 ± 0.1e-3,
-    GAPDH_K_i_Phosphate = 10e-3 ± 4e-3,
-    GAPDH_K_BPG = 0.78e-6 ± 0.1e-6,
-    GAPDH_K_a_NADH = 7.8e-6 ± 1.2e-6,
-    GAPDH_K_i_NADH = 1.8e-6 ± 0.3e-6,
-    GAPDH_α_i_BPG = 4.5 ± 0.7,
+    GAPDH_K_a_NAD = 78e-6 ± 9e-6,
+    GAPDH_K_i_NAD = 130e-6 ± 34e-6,
+    GAPDH_K_a_Phosphate = 1.5e-3 ± 0.4e-3,
+    GAPDH_K_i_Phosphate = 5.5e-3 ± 3.8e-3,
+    GAPDH_K_BPG = 0.82e-6 ± 0.14e-6,
+    GAPDH_K_a_NADH = 12e-6 ± 7e-6,
+    GAPDH_K_i_NADH = 2.5e-6 ± 1.1e-6,
+    GAPDH_β_i_BPG = 0.22 ± 0.04,
     GAPDH_Conc = (cell_protein_density / cell_volume_correction) * (5.6e-3 ± 0.5e-3),
     GAPDH_Vmax = 130 ± 20,
-    GAPDH_Keq = 16 ± 5,
+    GAPDH_Keq = 15 ± 6,
     GAPDH_MW = 36053.0 / 1000,
     PGK_K_BPG = 3e-6 ± 0.7e-6,
     PGK_K_ADP = 42e-6 ± 10e-6,
@@ -326,35 +326,35 @@ glycolysis_params_w_uncertainty = LVector(
 )
 
 """
-LArray containing mean of kinetic and thermodynamic parameters for enzyme rate equations.  
-Use `propertynames(glycolysis_params)` for list of all parameters given  
-as "EnzymeGeneName_ParameterName".  
-  
-    Parameters have the following units:  
-    K - M  
-    β - unitless  
-    Vmax - µmol/min per mg protein or U per mg  
-    Keq - depends on reaction stoichiometry  
-    Conc - mg protein/ul of cytosolic volume (converted from mg protein/mg proteome)  
-    Conc⋅Vmax - M/min  
-    Keq - either unitless or concentration  
-    MW - g / mole /1000  
+LArray containing mean of kinetic and thermodynamic parameters for enzyme rate equations.
+Use `propertynames(glycolysis_params)` for list of all parameters given
+as "EnzymeGeneName_ParameterName".
+
+    Parameters have the following units:
+    K - M
+    β - unitless
+    Vmax - µmol/min per mg protein or U per mg
+    Keq - depends on reaction stoichiometry
+    Conc - mg protein/ul of cytosolic volume (converted from mg protein/mg proteome)
+    Conc⋅Vmax - M/min
+    Keq - either unitless or concentration
+    MW - g / mole /1000
 """
 glycolysis_params = Measurements.value.(glycolysis_params_w_uncertainty)
 
 """
-SEM of kinetic and thermodynamic parameters for enzyme rate equations.  
-Use `propertynames(glycolysis_params_uncertainty)` for list of all parameters given  
-as "EnzymeGeneName_ParameterName".  
-  
-    Parameters have the following units:  
-    K - M  
-    β - unitless  
-    Vmax - µmol/min per mg protein or U per mg  
-    Keq - depends on reaction stoichiometry  
-    Conc - mg protein/ul of cytosolic volume (converted from mg protein/mg proteome)  
-    Conc⋅Vmax - M/min  
-    Keq - either unitless or concentration  
-    MW - g / mole /1000  
+SEM of kinetic and thermodynamic parameters for enzyme rate equations.
+Use `propertynames(glycolysis_params_uncertainty)` for list of all parameters given
+as "EnzymeGeneName_ParameterName".
+
+    Parameters have the following units:
+    K - M
+    β - unitless
+    Vmax - µmol/min per mg protein or U per mg
+    Keq - depends on reaction stoichiometry
+    Conc - mg protein/ul of cytosolic volume (converted from mg protein/mg proteome)
+    Conc⋅Vmax - M/min
+    Keq - either unitless or concentration
+    MW - g / mole /1000
 """
 glycolysis_params_uncertainty = Measurements.uncertainty.(glycolysis_params_w_uncertainty)
