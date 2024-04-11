@@ -233,7 +233,7 @@ function rate_isotope_tracing_GAPDH(metabs, params, isotope::Symbol)
         metabs.NADH / params.GAPDH_K_i_NADH * (
             1 +
             GAP / params.GAPDH_K_GAP * (1 + metabs.Phosphate / params.GAPDH_K_i_Phosphate) +
-            BPG / (params.GAPDH_α_i_BPG * params.GAPDH_K_BPG)
+            BPG / (params.GAPDH_β_i_BPG * params.GAPDH_K_BPG)
         )
     if isotope == :C12
         Rate = ((
