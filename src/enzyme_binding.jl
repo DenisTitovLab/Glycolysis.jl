@@ -265,7 +265,7 @@ function binding_GAPDH(metabs, params)
         metabs.NADH / params.GAPDH_K_i_NADH * (
             1 +
             metabs.GAP / params.GAPDH_K_GAP * (1 + metabs.Phosphate / params.GAPDH_K_i_Phosphate) +
-            metabs.BPG / (params.GAPDH_β_i_BPG * params.GAPDH_K_BPG)
+            params.GAPDH_β_i_BPG * metabs.BPG / (params.GAPDH_K_BPG)
         )
     Z = (Z_a^4 + params.GAPDH_L * Z_i^4)
     GAP_bound =
@@ -326,7 +326,7 @@ function binding_GAPDH(metabs, params)
                 (
                     1 +
                     metabs.NAD / params.GAPDH_K_i_NAD +
-                    metabs.NADH / (params.GAPDH_β_i_BPG * params.GAPDH_K_i_NADH)
+                    mparams.GAPDH_β_i_BPG * etabs.NADH / (params.GAPDH_K_i_NADH)
                 ) *
                 (1 + metabs.Phosphate / params.GAPDH_K_i_Phosphate) *
                 Z_i^3
@@ -347,7 +347,7 @@ function binding_GAPDH(metabs, params)
                 (
                     1 +
                     metabs.GAP / params.GAPDH_K_GAP * (1 + metabs.Phosphate / params.GAPDH_K_i_Phosphate) +
-                    metabs.BPG / (params.GAPDH_β_i_BPG * params.GAPDH_K_BPG)
+                    params.GAPDH_β_i_BPG * metabs.BPG / (params.GAPDH_K_BPG)
                 ) *
                 Z_i^3
             )
