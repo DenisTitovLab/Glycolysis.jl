@@ -326,7 +326,7 @@ function binding_GAPDH(metabs, params)
                 (
                     1 +
                     metabs.NAD / params.GAPDH_K_i_NAD +
-                    mparams.GAPDH_β_i_BPG * etabs.NADH / (params.GAPDH_K_i_NADH)
+                    params.GAPDH_β_i_BPG * metabs.NADH / (params.GAPDH_K_i_NADH)
                 ) *
                 (1 + metabs.Phosphate / params.GAPDH_K_i_Phosphate) *
                 Z_i^3
