@@ -506,4 +506,4 @@ label_f =
 fig
 
 # uncomment the line below to save the plot
-# save("Results/$(Dates.format(now(),"mmddyy"))_FigS3_global_sensitivity_analysis.png", fig, px_per_unit = 4)
+save("Results/$(Dates.format(now(),"mmddyy"))_FigS3_global_sensitivity_analysis.png", fig, px_per_unit = 4)

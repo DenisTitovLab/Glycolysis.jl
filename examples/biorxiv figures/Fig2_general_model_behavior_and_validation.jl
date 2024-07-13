@@ -689,4 +689,4 @@ label_e =
 fig
 
 # uncomment the line below to save the plot
-# save("Results/$(Dates.format(now(),"mmddyy"))_Fig2_model_behavior_and_validation_Lact_media_0.png", fig, px_per_unit = 4)
+save("Results/$(Dates.format(now(),"mmddyy"))_Fig2_model_behavior_and_validation_Lact_media_0.png", fig, px_per_unit = 4)

@@ -663,4 +663,4 @@ label_e = fig[2, 5, TopLeft()] = Label(
 fig
 
 # uncomment the line below to save the plot
-# save("Results/$(Dates.format(now(),"mmddyy"))_Fig5_mechanism_of_ATP_maintenence_by_allost.png", fig, px_per_unit = 4)
+save("Results/$(Dates.format(now(),"mmddyy"))_Fig5_mechanism_of_ATP_maintenence_by_allost.png", fig, px_per_unit = 4)

@@ -1146,4 +1146,4 @@ label_j =
 fig
 
 # uncomment the line below to save the plot
-# save("Results/$(Dates.format(now(),"mmddyy"))_FigS5_gsa_and_sims_for_cofactor_pool_sizes_and_AK_CK_NDPK.png", fig, px_per_unit = 4)
+save("Results/$(Dates.format(now(),"mmddyy"))_FigS5_gsa_and_sims_for_cofactor_pool_sizes_and_AK_CK_NDPK.png", fig, px_per_unit = 4)

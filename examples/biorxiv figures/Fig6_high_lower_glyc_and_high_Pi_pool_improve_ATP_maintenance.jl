@@ -757,4 +757,4 @@ label_f =
 fig
 
 # uncomment the line below to save the plot
-# save("Results/$(Dates.format(now(),"mmddyy"))_Fig6_high_lower_glyc_and_Pi_pool_required_for_ATP_maintenance.png", fig, px_per_unit = 4)
+save("Results/$(Dates.format(now(),"mmddyy"))_Fig6_high_lower_glyc_and_Pi_pool_required_for_ATP_maintenance.png", fig, px_per_unit = 4)

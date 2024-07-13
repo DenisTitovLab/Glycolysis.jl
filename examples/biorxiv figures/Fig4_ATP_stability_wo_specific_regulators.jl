@@ -262,4 +262,4 @@ label_n = fig[3, 4, TopLeft()] = Label(fig, "N", fontsize = 12, halign = :right,
 fig
 
 # uncomment the line below to save the plot
-# save("Results/$(Dates.format(now(),"mmddyy"))_Fig4_ATP_stability_wo_specific_reg.png", fig, px_per_unit = 4)
+save("Results/$(Dates.format(now(),"mmddyy"))_Fig4_ATP_stability_wo_specific_reg.png", fig, px_per_unit = 4)

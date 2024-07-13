@@ -68,4 +68,4 @@ colgap!(fig.layout, 10)
 fig
 
 # uncomment the line below to save the plot
-# save("Results/$(Dates.format(now(),"mmddyy"))_Fig1_GPI_PFK_plots.png", fig, px_per_unit = 4)
+save("Results/$(Dates.format(now(),"mmddyy"))_Fig1_GPI_PFK_plots.png", fig, px_per_unit = 4)

@@ -321,4 +321,4 @@ rowgap!(fig.layout, 10)
 fig
 
 # uncomment the line below to save the plot
-# save("Results/$(Dates.format(now(),"mmddyy"))_FigS4_glyc_intermediate_at_constant_Pi.png", fig, px_per_unit = 4)
+save("Results/$(Dates.format(now(),"mmddyy"))_FigS4_glyc_intermediate_at_constant_Pi.png", fig, px_per_unit = 4)
