@@ -1,7 +1,7 @@
 # it take about 3 min to run this code on 8-core computer
 # the code is parallelized so the time will scale with the number of CPU cores
 
-using Glycolysis, Revise
+using Glycolysis
 using DifferentialEquations
 using CairoMakie, DataFrames, Dates, Printf, CSV, Statistics
 
@@ -39,6 +39,8 @@ using DataFrames, CSV, Dates
     init_conc.Citrate = 0.0
     init_conc.F26BP = 0.0
     init_conc.Phenylalanine = 0.0
+    default_params.CK_Vmax = 0.0
+    default_params.NDPK_Vmax = 0.0
 
     # pathway_Vmax = 2 * default_params.HK1_Conc * default_params.HK1_Vmax
     # pathway_Vmax = min(2 * params.HK1_Vmax * params.HK1_Conc, 2 * params.PFKP_Vmax * params.PFKP_Conc, 2 * params.ALDO_Vmax * params.ALDO_Conc)
@@ -62,14 +64,14 @@ using DataFrames, CSV, Dates
     cb_set = CallbackSet(PresetTime_cb1, PresetTime_cb2, PresetTime_cb3)
 
     init_cond_prob = ODEProblem(glycolysis_ODEs, init_conc, (0, 1e8), params)
-    init_cond_sol = solve(init_cond_prob, Rodas5P(), abstol = 1e-15, reltol = 1e-5, save_everystep = false)
+    init_cond_sol = solve(init_cond_prob, Rodas5P(), abstol = 1e-15, reltol = 1e-8, save_everystep = false)
     new_init_cond = init_cond_sol.u[end]
     prob = ODEProblem(glycolysis_ODEs, new_init_cond, tspan, params, callback = cb_set)
     sol = solve(
         prob,
         Rodas5P(),
-        abstol = 1e-12,
-        reltol = 1e-5,
+        abstol = 1e-15,
+        reltol = 1e-8,
         saveat = [k for k = tspan[1]:((tspan[2]-tspan[1])/10_000):tspan[2]],
     )
 
@@ -101,11 +103,13 @@ end
 default_params_ics_res = glyc_step_response(glycolysis_params, glycolysis_init_conc)
 
 number_boostraps = 10_000
+glycolysis_params_copy = deepcopy(glycolysis_params)
+glycolysis_params_copy.CK_Vmax = 1.0
+glycolysis_params_copy.NDPK_Vmax = 1.0
 bootstrap_glycolysis_params = [
-    rand.(truncated.(Normal.(glycolysis_params, glycolysis_params_uncertainty); lower = 0.0)) for
+    rand.(truncated.(Normal.(glycolysis_params_copy, glycolysis_params_uncertainty); lower = 0.0)) for
     i = 1:number_boostraps
 ]
-
 # next line take about 1 min to execute on an 8-core computer
 bootstrap_param_step_response_list = @showprogress "Computing Parameters Sensitivity" pmap(
     x -> glyc_step_response(x, glycolysis_init_conc),
@@ -253,7 +257,7 @@ set_theme!(Theme(fontsize = 6, Axis = (
     yticklabelpad = 1,
     ylabelpadding = 3,
 )))
-fig = Figure(resolution = size_pt)
+fig = Figure(size = size_pt)
 
 
 
@@ -313,7 +317,7 @@ axislegend(
     position = :rt,
     rowgap = 1,
     framevisible = false,
-    padding = (-5, -5, -8, -8),
+    padding = (-5, -3, -8, -6),
     patchsize = (7.5, 7.5),
 )
 
@@ -385,7 +389,7 @@ axislegend(
     position = :rt,
     rowgap = 1,
     framevisible = false,
-    padding = (-5, -5, -8, -8),
+    padding = (-5, -3, -8, -6),
     patchsize = (7.5, 7.5),
 )
 
@@ -441,7 +445,7 @@ axislegend(
     position = :rt,
     rowgap = 1,
     framevisible = false,
-    padding = (-5, -5, -8, -8),
+    padding = (-5, -3, -8, -6),
     patchsize = (7.5, 7.5),
 )
 
@@ -502,7 +506,7 @@ axislegend(
     position = :rt,
     rowgap = 1,
     framevisible = false,
-    padding = (-5, -5, -8, -8),
+    padding = (-5, -3, -8, -6),
     patchsize = (7.5, 7.5),
 )
 
@@ -574,7 +578,7 @@ axislegend(
     position = :rt,
     rowgap = 1,
     framevisible = false,
-    padding = (-5, -5, -8, -8),
+    padding = (-5, -3, -8, -6),
     patchsize = (7.5, 7.5),
 )
 
@@ -630,7 +634,7 @@ axislegend(
     position = :rt,
     rowgap = 1,
     framevisible = false,
-    padding = (-5, -5, -8, -8),
+    padding = (-5, -3, -8, -6),
     patchsize = (7.5, 7.5),
 )
 
@@ -692,7 +696,7 @@ axislegend(
     position = :rt,
     rowgap = 1,
     framevisible = false,
-    padding = (-5, -5, -8, -8),
+    padding = (-5, -3, -8, -6),
     patchsize = (7.5, 7.5),
 )
 
@@ -764,7 +768,7 @@ axislegend(
     position = :rt,
     rowgap = 1,
     framevisible = false,
-    padding = (-5, -5, -8, -8),
+    padding = (-5, -3, -8, -6),
     patchsize = (7.5, 7.5),
 )
 
@@ -820,7 +824,7 @@ axislegend(
     position = :rt,
     rowgap = 1,
     framevisible = false,
-    padding = (-5, -5, -8, -8),
+    padding = (-5, -3, -8, -6),
     patchsize = (7.5, 7.5),
 )
 
@@ -843,4 +847,3 @@ label_i = fig[3, 5, TopLeft()] = Label(fig, "I", fontsize = 12, halign = :right,
 fig
 # uncomment the line below to save the plot
 # save("Results/$(Dates.format(now(),"mmddyy"))_FigS1_model_behavior_and_validation_w_CI.png", fig, px_per_unit = 4)
-

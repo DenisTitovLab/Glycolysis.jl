@@ -3,7 +3,33 @@ using LabelledArrays
 # Define cellular parameters and kinetic+thermodynamic constants of enzymes
 Vmax_normalizer = 20
 
-params = LVector(
+van_heerden_glycolysis_init_conc = LVector(
+    Glucose_media = 110e-3,
+    Glucose = 0.087e-3,
+    G6P = 3.085e-3,
+    F6P = 0.752e-3,
+    F16BP = 0.836e-3,
+    GAP = 0.518e-3 * 0.045,
+    DHAP = 0.518e-3 * (1 - 0.045),
+    BPG = 0.111e-3,
+    ThreePG = 0.825e-3,
+    TwoPG = 0.138e-3,
+    PEP = 0.140e-3,
+    Pyruvate = 0.884e-3,
+    Acetald = 0.047e-3,
+    EtOH = 0.0e-3,
+    ATP = 2.06e-3,
+    ADP = 0.87e-3,
+    AMP = 0.165e-3,
+    NTP = 1.6e-3,
+    NDP = 0.0,
+    Phosphate = 10.0e-3,
+    NAD = 1.5e-3,
+    NADH = 0.044e-3,
+    F26BP = 0.0,
+)
+
+van_heerden_glycolysis_params = LVector(
     GLUT_Km_Glucose_media = 1.19e-3,
     GLUT_Km_Glucose = 1.19e-3,
     GLUT_Ki = 0.91,
@@ -120,12 +146,12 @@ params = LVector(
     ATPase_Km_ATP = 1e-6,
     ATPase_Keq = 83000.0,
     ATPase_Vmax = 0.1,
-);
+)
 
 
 # Warning for when all params are not Float64 (i.e. 1.0 instead 1). ODE solution speed slows down 10x.
 
-if eltype(params) != Float64
+if eltype(van_heerden_glycolysis_params) != Float64
     @warn "One or more of the kinetic or thermodynamic constants in params are not Float64 (e.g., 1 instead of 1.0). This will slow down Glycolysis Model solution by 10x but it will still work. Fix this to get better performance."
 end
 
@@ -320,6 +346,7 @@ end
 # Edit this equation to include ADP/Km_ADP and Pi/Km_Pi in the denominator to make it more accurate
 function rate_ATPase(ATP, ADP, Phosphate, params)
     Rate =
+    # ((0.01 * params.PFKP_Vmax + params.ATPase_Vmax) / params.ATPase_Km_ATP) *
         (params.ATPase_Vmax / params.ATPase_Km_ATP) *
         (1 / (1 + ATP / params.ATPase_Km_ATP)) *
         (ATP - ADP * Phosphate / params.ATPase_Keq)
@@ -328,7 +355,7 @@ end
 
 
 #Glycolysis Model ODE system
-function Glycolysis_ODEs(ds, s, params, t)
+function van_heerden_glycolysis_ODEs(ds, s, params, t)
     ds.Glucose_media = 0
     ds.Glucose = GLUT(s.Glucose_media, s.Glucose, params) - HK1(s.Glucose, s.G6P, s.ATP, s.ADP, params)
     ds.G6P = HK1(s.Glucose, s.G6P, s.ATP, s.ADP, params) - GPI(s.G6P, s.F6P, params)
@@ -374,7 +401,7 @@ function Glycolysis_ODEs(ds, s, params, t)
     ds.F26BP = 0
 end
 
-function Conc_to_Rates(s, params)
+function van_heerden_conc_to_rates(s, params)
     r = @LVector eltype(s) (
         :GLUT,
         :HK1,
@@ -415,7 +442,7 @@ function Conc_to_Rates(s, params)
     return r
 end
 
-function Conc_to_MassAction(s, params)
+function van_heerden_conc_to_disequilibrium_ratios(s, params)
     k = @LVector eltype(s) (
         :Q_Keq_GLUT,
         :Q_Keq_HK1,

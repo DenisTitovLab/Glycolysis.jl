@@ -1,5 +1,5 @@
 include("for_Fig7_TwoEnzymeModel.jl")
-using OrdinaryDiffEq, CairoMakie, LabelledArrays
+using DifferentialEquations, CairoMakie, LabelledArrays
 using DataFrames, CSV, Dates
 using FileIO
 
@@ -165,10 +165,11 @@ end
 
 ##
 #Precalculate MC simulation of two enzyme model
+#This code block will take a long time to run ~ 1 hour
 using Distributed
 addprocs(8; exeflags = "--project")
 @everywhere include("for_Fig7_TwoEnzymeModel.jl")
-@everywhere using OrdinaryDiffEq
+@everywhere using DifferentialEquations
 
 using DataFrames, CSV, Dates
 
@@ -178,7 +179,8 @@ using DataFrames, CSV, Dates
     pathway_Vmax = min(params.Enz1_Vmax, params.Enz2_Vmax)
 
     ATPases = 10 .^ range(log10(0.01), log10(1.0), n_Vmax_ATPase_values) .* pathway_Vmax
-    prob = ODEProblem(minimal_glycolysis_ODEs, initial_concentrations, tspan, params)
+    prob = ODEProblem(minimal_glycolysis_ODEs, initial_concentrations, tspan, params) #uncomment to to keep variable Pi
+    # prob = ODEProblem(minimal_glycolysis_ODEs_fixed_Pi, initial_concentrations, tspan, params) #uncomment to fix Pi
     function prob_func(prob, i, repeat)
         prob.p.ATPase_Vmax = ATPases[i]
         prob
@@ -232,10 +234,10 @@ random_log_range(start_val, end_val) = 10^(start_val + (end_val - start_val) * r
 
 function generate_random_params()
     rand_model_params = LVector(
-        # Enz1_L = random_log_range(-5, -1),
-        # Enz1_n = rand([1, 2, 3, 4]),
-        Enz1_L = 0.0,
-        Enz1_n = 1,
+        # Enz1_L = random_log_range(-5, -1), #uncomment to include allostery
+        # Enz1_n = rand([1, 2, 3, 4]), #uncomment to include allostery
+        Enz1_L = 0.0, #uncomment to fix L=0 and remove allostery
+        Enz1_n = 1, #uncomment to fix n=1 and remove allostery
         Enz1_Vmax = random_log_range(-3, -1),
         Enz1_Keq = random_log_range(1, 4),
         Enz2_Vmax = random_log_range(-3, -1),
@@ -255,7 +257,7 @@ res = @time pmap(
 
 two_model_sims_res_df = DataFrame(res)
 CSV.write(
-    "$(Dates.format(now(),"mmddyy"))_hist_two_enzyme_model_fixed_Km_10mM_Pi_no_allost_$(n_repeats)_repeats_fixed_Pi.csv",
+    "$(Dates.format(now(),"mmddyy"))_hist_two_enzyme_model_fixed_$(n_repeats)_repeats_no_allost_fixed_Pi.csv",
     two_model_sims_res_df,
 )
 
@@ -290,11 +292,11 @@ set_theme!(Theme(fontsize = 6, Axis = (
     yticklabelpad = 1,
     ylabelpadding = 3,
 )))
-fig = Figure(resolution = size_pt)
+fig = Figure(size = size_pt)
 
 
 two_enzyme_schematic = load(
-    "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/My Articles/Glycolysis model paper/Figures/Two_enzyme_glycolysis_schematic_w_feedback.png",
+    "111523_Two_enzyme_glycolysis_schematic_w_feedback_w_pi_trap.png",
 )
 
 ax_two_enzyme_schematic, im = image(
@@ -303,7 +305,7 @@ ax_two_enzyme_schematic, im = image(
     axis = (aspect = DataAspect(), title = "Two-enzyme model"),
 )
 ax_two_enzyme_schematic.alignmode = Mixed(top = -15, bottom = -5, left = -10)
-ax_two_enzyme_schematic.width = 70
+ax_two_enzyme_schematic.width = 80
 ax_two_enzyme_schematic.tellwidth = false
 
 hidedecorations!(ax_two_enzyme_schematic)
@@ -348,11 +350,9 @@ axislegend(
     ax_hist,
     [complete_hist, no_allo_hist, no_allo_fixed_Pi_hist],
     ["+ allost.", "– allost.", "– allost.\n[Pi]=5mM"],
-    position = :lt,
-    # position = (1.075, 1.05),
+    position = (-0.3, 1.1),
     rowgap = 1,
     framevisible = false,
-    padding = (-5, -5, 0, -8),
     patchsize = (10, 5),
 )
 
@@ -395,11 +395,9 @@ axislegend(
     ax_hist,
     [complete_hist, no_allo_hist, no_allo_fixed_Pi_hist],
     ["+ allost.", "– allost.", "– allost.\n[Pi]=5mM"],
-    position = :ct,
-    # position = (1.075, 1.05),
+    position = (0.5, 1.1),
     rowgap = 1,
     framevisible = false,
-    padding = (-5, -5, 0, -8),
     patchsize = (10, 5),
 )
 
@@ -440,11 +438,9 @@ axislegend(
     ax_hist,
     [complete_hist, no_allo_hist, no_allo_fixed_Pi_hist],
     ["+ allost.", "– allost.", "– allost.\n[Pi]=5mM"],
-    position = :lt,
-    # position = (1.075, 1.05),
+    position = (-0.3, 1.1),
     rowgap = 1,
     framevisible = false,
-    padding = (-5, -5, 0, -8),
     patchsize = (10, 5),
 )
 
@@ -460,7 +456,7 @@ ax_ATPase_range = Axis(
     # yscale = log10,
     xticks = [0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0],
     # xtickformat = xs -> ["$(Int(round(x*100)))%" for x in xs],
-    xtickformat = xs -> ["$(100*x < 1.0 ? round(x*100, sigdigits=1) : Int(round(x*100)))%" for x in xs],
+    xtickformat = xs -> ["$(100*x < 1.0 ? round(x*100, sigdigits=1) : Int(round(x*100)))" for x in xs],
     ytickformat = ys -> ["$(Int(round(y*1000, sigdigits=2)))" for y in ys],
     # yticklabelcolor = Makie.wong_colors()[1],
     # ylabelcolor = Makie.wong_colors()[1],
@@ -499,10 +495,9 @@ text!(
 )
 axislegend(
     ax_ATPase_range,
-    position = (0.9, -0.01),
+    position = (1.4, -0.01),
     rowgap = 0,
     framevisible = false,
-    padding = (-5, -5, 0, -8),
     patchsize = (10, 5),
 )
 
@@ -517,7 +512,7 @@ ax_ATPase_range = Axis(
     # yscale = log10,
     xticks = [0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0],
     # xtickformat = xs -> ["$(Int(round(x*100)))%" for x in xs],
-    xtickformat = xs -> ["$(100*x < 1.0 ? round(x*100, sigdigits=1) : Int(round(x*100)))%" for x in xs],
+    xtickformat = xs -> ["$(100*x < 1.0 ? round(x*100, sigdigits=1) : Int(round(x*100)))" for x in xs],
     ytickformat = ys -> ["$(Int(round(y*1000, sigdigits=2)))" for y in ys],
     # yticklabelcolor = Makie.wong_colors()[1],
     # ylabelcolor = Makie.wong_colors()[1],
@@ -556,10 +551,9 @@ text!(
 )
 axislegend(
     ax_ATPase_range,
-    position = (0.9, 0.1),
+    position = (0.0, -0.01),
     rowgap = 3,
     framevisible = false,
-    padding = (-5, -5, 0, -8),
     patchsize = (10, 5),
 )
 
@@ -574,7 +568,7 @@ ax_ATPase_range = Axis(
     # yscale = log10,
     xticks = [0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0],
     # xtickformat = xs -> ["$(Int(round(x*100)))%" for x in xs],
-    xtickformat = xs -> ["$(100*x < 1.0 ? round(x*100, sigdigits=1) : Int(round(x*100)))%" for x in xs],
+    xtickformat = xs -> ["$(100*x < 1.0 ? round(x*100, sigdigits=1) : Int(round(x*100)))" for x in xs],
     ytickformat = ys -> ["$(Int(round(y*1000, sigdigits=2)))" for y in ys],
     # yticklabelcolor = Makie.wong_colors()[1],
     # ylabelcolor = Makie.wong_colors()[1],
@@ -614,11 +608,9 @@ text!(
 )
 axislegend(
     ax_ATPase_range,
-    position = (0.0, 0.3),
-    # position = :lc,
+    position = (0.7, 0.3),
     rowgap = 3,
     framevisible = false,
-    padding = (-5, -5, 0, -8),
     patchsize = (10, 5),
 )
 
@@ -633,7 +625,7 @@ ax_ATPase_range = Axis(
     # yscale = log10,
     xticks = [0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0],
     # xtickformat = xs -> ["$(Int(round(x*100)))%" for x in xs],
-    xtickformat = xs -> ["$(100*x < 1.0 ? round(x*100, sigdigits=1) : Int(round(x*100)))%" for x in xs],
+    xtickformat = xs -> ["$(100*x < 1.0 ? round(x*100, sigdigits=1) : Int(round(x*100)))" for x in xs],
     ytickformat = ys -> ["$(Int(round(y*1000, sigdigits=2)))" for y in ys],
     # yticklabelcolor = Makie.wong_colors()[1],
     # ylabelcolor = Makie.wong_colors()[1],
@@ -671,10 +663,9 @@ text!(
 )
 axislegend(
     ax_ATPase_range,
-    position = (0.9, 0.1),
+    position = (0.5, 0.1),
     rowgap = 3,
     framevisible = false,
-    padding = (-5, -5, 0, -8),
     patchsize = (10, 5),
 )
 
