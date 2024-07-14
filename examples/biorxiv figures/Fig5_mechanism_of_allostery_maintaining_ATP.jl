@@ -6,6 +6,7 @@ using FileIO
 
 ##
 # Precalculate output of complete model and model without regulation
+# This code takes ~10 minutes to run on an 8 core machine
 
 function glycolysis_ODEs_fixed_Pi(ds, s, params, t)
     ds.Glucose_media = 0.0
@@ -202,7 +203,7 @@ function find_ATP_at_ATPase_range(
         ODE_func,
         params,
         init_conc;
-        n_Vmax_ATPase_values = 1000,
+        n_Vmax_ATPase_values = 200,
         min_ATPase = 0.001,
         max_ATPase = 1.0
 )
@@ -218,9 +219,10 @@ function find_ATP_at_ATPase_range(
     ensemble_prob = EnsembleProblem(prob, prob_func = prob_func)
     sim = solve(
         ensemble_prob,
-        Rodas5P(),
+        # Rodas5P(),
+        RadauIIA5(),
         EnsembleThreads(),
-        trajectories = 1_000,
+        trajectories = length(ATPases),
         abstol = 1e-15,
         reltol = 1e-8,
         save_everystep = false,
@@ -260,13 +262,6 @@ glycolysis_init_conc_copy.Phosphate = 1e-3
 Const_Pi_No_Reg_Model_Simulation_Data = find_ATP_at_ATPase_range(
     glycolysis_ODEs_fixed_Pi, no_reg_params, glycolysis_init_conc_copy)
 
-# glycolysis_init_conc_copy = deepcopy(glycolysis_init_conc)
-# glycolysis_init_conc_copy.BPG = 1e-5
-# glycolysis_init_conc_copy.NADH = 1e-5
-# glycolysis_init_conc_copy.NAD = 1e-3
-# Const_BPG_NAD_NADH_No_Reg_Model_Simulation_Data =
-#     find_ATP_at_ATPase_range(glycolysis_ODEs_fixed_BPG_NAD_NADH, no_reg_params, glycolysis_init_conc_copy)
-
 no_reg_Keq_params = deepcopy(glycolysis_params)
 no_reg_Keq_params.HK1_K_a_G6P_cat = Inf
 no_reg_Keq_params.HK1_K_i_G6P_reg = Inf
@@ -283,9 +278,7 @@ no_reg_Keq_params.GAPDH_Keq = 0.5
 Keq_HK_PFK_GAPDH_PGK_No_Reg_Model_Simulation_Data = find_ATP_at_ATPase_range(
     glycolysis_ODEs,
     no_reg_Keq_params,
-    glycolysis_init_conc;
-    min_ATPase = 0.001,
-    max_ATPase = 1.0
+    glycolysis_init_conc
 )
 
 glycolysis_init_conc_copy = deepcopy(glycolysis_init_conc)
@@ -452,10 +445,11 @@ axislegend(
     patchsize = (10, 5)
 )
 
+adenine_pool_size = glycolysis_init_conc.ATP + glycolysis_init_conc.ADP + glycolysis_init_conc.AMP
 # Plot [ATP] maintenance with constant Phosphate
 ax_ATPase_range = Axis(
     fig[2, 1:2],
-    limits = ((0.001, 1.0), (-0.2e-3, 15e-3)),
+    limits = ((0.001, 1.0), (-0.2e-3, 1.75 * adenine_pool_size)),
     xlabel = "ATPase, % of pathway Vmax",
     ylabel = "[ATP],mM",
     title = "Metabolite concentration changes\nwith constant [Phosphate]",
@@ -519,7 +513,7 @@ axislegend(
 # Plot [ATP] maintenance with different Keq HK PFK GAPDH PGK
 ax_ATPase_range = Axis(
     fig[2, 3:4],
-    limits = ((0.001, 1.0), (-0.2e-3, 15e-3)),
+    limits = ((0.001, 1.0), (-0.2e-3, 1.75 * adenine_pool_size)),
     # limits = ((0.0001, 1.0), (-0.2e-3, 14e-3)),
     xlabel = "ATPase, % of pathway Vmax",
     ylabel = "[ATP],mM",
@@ -585,7 +579,7 @@ ax_ATPase_range.width = 120
 # Plot [ATP] maintenance with HK and PFK rate sub'd to ATPase rate
 ax_ATPase_range = Axis(
     fig[2, 5:6],
-    limits = ((0.001, 1.0), (-0.2e-3, 15e-3)),
+    limits = ((0.001, 1.0), (-0.2e-3, 1.75 * adenine_pool_size)),
     xlabel = "ATPase, % of pathway Vmax",
     ylabel = "[ATP],mM",
     title = "Maintaining ATP concentration\nwith 0.5V(HK1)=0.5V(PFKP)=V(ATPase)",
@@ -663,4 +657,4 @@ label_e = fig[2, 5, TopLeft()] = Label(
 fig
 
 # uncomment the line below to save the plot
-save("Results/$(Dates.format(now(),"mmddyy"))_Fig5_mechanism_of_ATP_maintenence_by_allost.png", fig, px_per_unit = 4)
+# save("Results/$(Dates.format(now(),"mmddyy"))_Fig5_mechanism_of_ATP_maintenence_by_allost.png", fig, px_per_unit = 4)
