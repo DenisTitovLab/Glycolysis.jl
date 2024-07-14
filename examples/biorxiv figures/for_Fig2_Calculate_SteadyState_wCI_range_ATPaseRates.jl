@@ -150,17 +150,3 @@ CSV.write(
     "Results/$(Dates.format(now(),"mmddyy"))_Glycolysis_Processed_Free_Metabolite_Results_$(n_repeats)_reps_w_ATPase_range_$(Int(round(ATPase_Vmax_frac_list[1]*100, sigdigits =1)))_$(Int(round(ATPase_Vmax_frac_list[end]*100, sigdigits=1)))_percent_Lact_media_0_Glucose_media_25.csv",
     Processed_Data_Free
 );
-
-##
-Data_Total = CSV.read(
-    "Results/071224_Glycolysis_Total_Metabolite_Results_10000_reps_w_ATPase_range_2_20_percent_Lact_media_0_Glucose_media_25.csv",
-    DataFrame
-)
-
-sum(Data_Total.ATP .> Data_Total.AMP) / nrow(Data_Total)
-sum(Data_Total.ATPprod_ATPase_ratios .> 0.99) / nrow(Data_Total)
-
-data_for_plot = combine(groupby(Data_Total, :ATPase_Vmax_frac),
-    [:ATP, :AMP] => (atp, amp) -> sum(atp .> amp) / length(atp))
-lines(data_for_plot.ATPase_Vmax_frac, data_for_plot.ATP_AMP_function)
-current_figure()
