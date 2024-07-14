@@ -168,7 +168,7 @@ for (i, model_name) in enumerate(model_names_list)
         else
             @error "More than 6 plots won't fit"
         end,
-        limits = ((0.001, 1.0), (-0.3e-3, adenine_pool_size * 1.5)),
+        limits = ((0.001, 1.0), (-0.3e-3, adenine_pool_size * 1.45)),
         xscale = log10,
         xlabel = "ATPase, % of pathway Vmax",
         ylabel = "[ATP],mM",
