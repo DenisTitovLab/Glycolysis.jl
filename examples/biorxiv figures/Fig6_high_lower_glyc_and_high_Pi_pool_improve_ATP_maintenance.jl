@@ -14,7 +14,7 @@ function calculate_ATP_at_range_ATPases(glycolysis_params, glycolysis_init_conc)
     prob = ODEProblem(glycolysis_ODEs, glycolysis_init_conc, tspan, glycolysis_params)
     n_Vmax_ATPase_values = 1000
     Pathway_Vmax = 2 * glycolysis_params.HK1_Conc * glycolysis_params.HK1_Vmax
-    ATPases = 10 .^ range(log10(0.003), log10(0.3), n_Vmax_ATPase_values) .* Pathway_Vmax
+    ATPases = 10 .^ range(log10(0.003), log10(0.45), n_Vmax_ATPase_values) .* Pathway_Vmax
     function prob_func(prob, i, repeat)
         prob.p.ATPase_Vmax = ATPases[i]
         prob
@@ -371,7 +371,7 @@ ax_ATP_conc = Axis(
         (0.003, 0.45),
         (
             0.0,
-            1.5 * (
+            1.4 * (
                 glycolysis_init_conc.ATP +
                 glycolysis_init_conc.ADP +
                 glycolysis_init_conc.AMP
@@ -586,7 +586,7 @@ ax_ATP_conc = Axis(
         (0.003, 0.45),
         (
             0.0,
-            1.5 * (
+            1.4 * (
                 glycolysis_init_conc.ATP +
                 glycolysis_init_conc.ADP +
                 glycolysis_init_conc.AMP
@@ -663,7 +663,7 @@ ax_ATP_conc = Axis(
         (0.003, 0.45),
         (
             0.0,
-            1.5 * (
+            1.4 * (
                 glycolysis_init_conc.ATP +
                 glycolysis_init_conc.ADP +
                 glycolysis_init_conc.AMP
