@@ -81,6 +81,7 @@ push!(model_names_list, "No_HK1_Pi_act._and_No_PFKP_ADP,_Pi_act.")
 
 ##
 # Precalculate and save outputs for each model
+# This calculation can takes ~10 minutes on an 8 core machine
 
 function find_ATP_at_ATPase_range(params, init_conc; n_Vmax_ATPase_values = 1000)
     tspan = (0.0, 1e8)
@@ -155,6 +156,7 @@ no_reg_color = :Red
 no_reg_linestyle = :dot
 
 #Loop through models and plot everything
+adenine_pool_size = glycolysis_init_conc.ATP + glycolysis_init_conc.ADP + glycolysis_init_conc.AMP
 for (i, model_name) in enumerate(model_names_list)
     ax_ATP_conc = Axis(
         if i <= 4
@@ -166,7 +168,7 @@ for (i, model_name) in enumerate(model_names_list)
         else
             @error "More than 6 plots won't fit"
         end,
-        limits = ((0.001, 1.0), (-0.3e-3, 13e-3)),
+        limits = ((0.001, 1.0), (-0.3e-3, adenine_pool_size * 1.5)),
         xscale = log10,
         xlabel = "ATPase, % of pathway Vmax",
         ylabel = "[ATP],mM",
