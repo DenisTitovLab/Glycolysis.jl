@@ -271,11 +271,11 @@ axislegend(
 
 #Plot [Metabolite] of model vs data
 Model_Result_bootstrap = CSV.read(
-    "Results/041224_Glycolysis_Processed_Total_Metabolite_Results_10000_reps_w_ATPase_range_2_20_percent_Lact_media_0.csv",
+    "Results/071324_Glycolysis_Processed_Total_Metabolite_Results_10000_reps_w_ATPase_range_2_20_percent_Lact_media_0_Glucose_media_25.csv",
     DataFrame,
 )
 # Model_Result_bootstrap = CSV.read(
-#     "Results/041224_Glycolysis_Processed_Free_Metabolite_Results_10000_reps_w_ATPase_range_2_20_percent_Lact_media_0.csv",
+#     "Results/071324_Glycolysis_Processed_Free_Metabolite_Results_10000_reps_w_ATPase_range_2_20_percent_Lact_media_0_Glucose_media_25.csv",,
 #     DataFrame)
 
 
@@ -313,6 +313,7 @@ column_names =
         ),
         "_median" => "",
     )
+column_names = filter(x -> !occursin("BPG", x), column_names)
 color_index_nt = NamedTuple()
 for (i, name) in enumerate(column_names)
     points = Model_Result_bootstrap[:, name*"_median"]
@@ -359,8 +360,8 @@ ax1.xticks = (1:length(column_names), tick_labels)
 #Draw an inset
 high_bound = 15e-3
 low_bound = 1e-3
-left_bound = 12.6
-right_bound = 13.4
+left_bound = 11.6
+right_bound = 12.4
 inset_box = Axis(
     fig[2, 1:3];
     halign = :center,
@@ -396,8 +397,8 @@ lines!(
     color = :grey,
     linestyle = :dot,
 )
-lines!(ax1, [left_bound, 9.9], [low_bound, 1e-6], color = :grey, linestyle = :dot)
-lines!(ax1, [right_bound, 13], [low_bound, 1e-6], color = :grey, linestyle = :dot)
+lines!(ax1, [left_bound, 9.15], [low_bound, 1e-6], color = :grey, linestyle = :dot)
+lines!(ax1, [right_bound, 12.25], [low_bound, 1e-6], color = :grey, linestyle = :dot)
 CairoMakie.lines!(
     inset_box,
     Model_Result_bootstrap.ATPase_Vmax_frac,
@@ -441,7 +442,7 @@ Tracing_Panel = fig[2, 4:6] = GridLayout()
 
 #Load Lactate data
 Lactate_Model_results =
-    CSV.read("Results/041224_13C_lactate_labeling_w_CI_0.15.csv", DataFrame)
+    CSV.read("Results/071324_13C_lactate_labeling_w_CI_0.15.csv", DataFrame)
 
 Lactate_Experimental_data = DataFrame(
     XLSX.readtable(
@@ -453,7 +454,7 @@ Lactate_Experimental_data = DataFrame(
 
 #Load Glucose data
 Glucose_Model_results =
-    CSV.read("Results/041224_13C_glucose_labeling_w_CI_0.15.csv", DataFrame)
+    CSV.read("Results/071324_13C_glucose_labeling_w_CI_0.15.csv", DataFrame)
 
 Glucose_Experimental_data = DataFrame(
     XLSX.readtable(
