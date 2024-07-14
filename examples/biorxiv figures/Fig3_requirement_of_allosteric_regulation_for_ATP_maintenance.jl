@@ -218,8 +218,9 @@ axislegend(ax_ATP_prod,
     patchsize = (10, 5))
 
 # Plot [ATP]
+adenine_pool_size = glycolysis_init_conc.ATP + glycolysis_init_conc.ADP + glycolysis_init_conc.AMP
 ax_ATP_conc = Axis(fig[1, 2],
-    limits = (nothing, (2e-5, 15e-3)),
+    limits = (nothing, (2e-5, adenine_pool_size * 1.7)),
     xlabel = "Time, min",
     ylabel = "[ATP], mM",
     title = "Dynamically maintaining\nATP concentration",
@@ -333,7 +334,7 @@ axislegend(ax_ATPase_range,
 
 # Plot [ATP] maintenance
 ax_ATPase_range = Axis(fig[2, 2],
-    limits = ((0.003, 1.0), (-0.15e-3, 11e-3)),
+    limits = ((0.003, 1.0), (-0.15e-3, adenine_pool_size * 1.3)),
     xlabel = "ATPase, % of pathway Vmax",
     ylabel = "[ATP],mM",
     title = "Maintaining steady state\nATP concentration",
