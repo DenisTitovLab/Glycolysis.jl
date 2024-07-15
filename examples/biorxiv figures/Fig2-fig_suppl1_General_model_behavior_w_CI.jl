@@ -15,7 +15,7 @@ addprocs(8; exeflags = "--project")
 using Distributions, LabelledArrays, Statistics, StatsBase, DataFrames, CSV
 using DataFrames, CSV, Dates
 
-@everywhere Initial_ATPase_Vmax_frac = 0.03
+@everywhere Initial_ATPase_Vmax_frac = 0.06
 @everywhere High_ATPase_Vmax_frac = Initial_ATPase_Vmax_frac * 2
 @everywhere Low_ATPase_Vmax_frac = Initial_ATPase_Vmax_frac / 2
 @everywhere ATPase_change_time1 = 60 / 4
@@ -324,7 +324,7 @@ axislegend(
 # Plot [ATP]
 ax_ATP_conc = Axis(
     fig[1, 3:4],
-    limits = (nothing, (0, 12e-3)),
+    limits = (nothing, (0, 14e-3)),
     xlabel = "Time, min",
     ylabel = "[ATP], mM",
     ytickformat = ys -> ["$(round(y*1000, sigdigits = 3))" for y in ys],
@@ -513,7 +513,7 @@ axislegend(
 # Plot [ATP]
 ax_ATP_conc = Axis(
     fig[2, 3:4],
-    limits = (nothing, (0, 12e-3)),
+    limits = (nothing, (0, 14e-3)),
     xlabel = "Time, min",
     ylabel = "[ATP], mM",
     ytickformat = ys -> ["$(round(y*1000, sigdigits = 3))" for y in ys],
@@ -846,4 +846,4 @@ label_i = fig[3, 5, TopLeft()] = Label(fig, "I", fontsize = 12, halign = :right,
 
 fig
 # uncomment the line below to save the plot
-save("Results/$(Dates.format(now(),"mmddyy"))_FigS1_model_behavior_and_validation_w_CI.png", fig, px_per_unit = 4)
+save("Results/$(Dates.format(now(),"mmddyy"))_Fig2-fig_supplement1_model_behavior_and_validation_w_CI.png", fig, px_per_unit = 4)
