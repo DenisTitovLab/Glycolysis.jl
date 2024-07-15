@@ -852,4 +852,4 @@ label_i = fig[3, 3, TopLeft()] = Label(fig,
 fig
 
 # uncomment the line below to save the plot
-save("Results/$(Dates.format(now(),"mmddyy"))_FigS2_Mulquiney_Shestov_van_Heerden_models.png", fig, px_per_unit = 4)
+save("Results/$(Dates.format(now(),"mmddyy"))_Fig3-fig_suppl1_Mulquiney_Shestov_van_Heerden_models.png", fig, px_per_unit = 4)
