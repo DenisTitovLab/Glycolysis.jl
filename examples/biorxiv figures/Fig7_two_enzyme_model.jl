@@ -23,7 +23,7 @@ function sol_at_ATPase_range(
     ensemble_prob = EnsembleProblem(prob, prob_func = prob_func)
     sim = solve(
         ensemble_prob,
-        Rodas4P2(),
+        Rodas5P(),
         EnsembleThreads(),
         trajectories = n_Vmax_ATPase_values,
         abstol = 1e-18,
@@ -40,51 +40,6 @@ function sol_at_ATPase_range(
     ATPases_succ_sims = [ATPases[i] for (i, sol) in enumerate(sim) if sol.retcode == ReturnCode.Success]
 
     return (ATP_conc = ATP_conc, ATP_energy = ATP_energy, ATPase_Vmax = ATPases_succ_sims / pathway_Vmax)
-end
-
-function minimal_glycolysis_ODEs_fixed_Pi(ds, s, params, t)
-    ds.Glu = 0.0
-    ds.X = (
-        rate_Enz1(s.Glu, s.ATP, s.X, s.ADP, s.Phosphate, params) -
-        rate_Enz2(s.X, s.Phosphate, s.ADP, s.Lac, s.ATP, params)
-    )
-    ds.Lac = 0
-    ds.ATP = (
-        -rate_Enz1(s.Glu, s.ATP, s.X, s.ADP, s.Phosphate, params) +
-        2 * rate_Enz2(s.X, s.Phosphate, s.ADP, s.Lac, s.ATP, params) -
-        minimal_model_rateATPase(s.ATP, s.ADP, s.Phosphate, params)
-    )
-    ds.ADP = (
-        rate_Enz1(s.Glu, s.ATP, s.X, s.ADP, s.Phosphate, params) -
-        2 * rate_Enz2(s.X, s.Phosphate, s.ADP, s.Lac, s.ATP, params) +
-        minimal_model_rateATPase(s.ATP, s.ADP, s.Phosphate, params)
-    )
-    # ds.Phosphate =
-    #     minimal_model_rateATPase(s.ATP, s.ADP, s.Phosphate, params) -
-    #     rate_Enz2(s.X, s.Phosphate, s.ADP, s.Lac, s.ATP, params)
-    ds.Phosphate = 0.0
-end
-
-function minimal_glycolysis_ODEs_Enz1_eq_ATPase(ds, s, params, t)
-    ds.Glu = 0.0
-    ds.X = (
-        minimal_model_rateATPase(s.ATP, s.ADP, s.Phosphate, params) -
-        rate_Enz2(s.X, s.Phosphate, s.ADP, s.Lac, s.ATP, params)
-    )
-    ds.Lac = 0
-    ds.ATP = (
-        -minimal_model_rateATPase(s.ATP, s.ADP, s.Phosphate, params) +
-        2 * rate_Enz2(s.X, s.Phosphate, s.ADP, s.Lac, s.ATP, params) -
-        minimal_model_rateATPase(s.ATP, s.ADP, s.Phosphate, params)
-    )
-    ds.ADP = (
-        minimal_model_rateATPase(s.ATP, s.ADP, s.Phosphate, params) -
-        2 * rate_Enz2(s.X, s.Phosphate, s.ADP, s.Lac, s.ATP, params) +
-        minimal_model_rateATPase(s.ATP, s.ADP, s.Phosphate, params)
-    )
-    ds.Phosphate =
-        minimal_model_rateATPase(s.ATP, s.ADP, s.Phosphate, params) -
-        rate_Enz2(s.X, s.Phosphate, s.ADP, s.Lac, s.ATP, params)
 end
 
 # Calculate complete model results
@@ -165,7 +120,7 @@ end
 
 ##
 #Precalculate MC simulation of two enzyme model
-#This code block will take a long time to run ~ 1 hour
+#This code block takes ~ 1 hour to run on 8 core machine
 using Distributed
 addprocs(8; exeflags = "--project")
 @everywhere include("for_Fig7_TwoEnzymeModel.jl")
@@ -179,8 +134,8 @@ using DataFrames, CSV, Dates
     pathway_Vmax = min(params.Enz1_Vmax, params.Enz2_Vmax)
 
     ATPases = 10 .^ range(log10(0.01), log10(1.0), n_Vmax_ATPase_values) .* pathway_Vmax
-    prob = ODEProblem(minimal_glycolysis_ODEs, initial_concentrations, tspan, params) #uncomment to to keep variable Pi
-    # prob = ODEProblem(minimal_glycolysis_ODEs_fixed_Pi, initial_concentrations, tspan, params) #uncomment to fix Pi
+    # prob = ODEProblem(minimal_glycolysis_ODEs, initial_concentrations, tspan, params) #uncomment to to keep variable Pi
+    prob = ODEProblem(minimal_glycolysis_ODEs_fixed_Pi, initial_concentrations, tspan, params) #uncomment to fix Pi
     function prob_func(prob, i, repeat)
         prob.p.ATPase_Vmax = ATPases[i]
         prob
@@ -188,13 +143,14 @@ using DataFrames, CSV, Dates
     ensemble_prob = EnsembleProblem(prob, prob_func = prob_func)
     sim = solve(
         ensemble_prob,
-        Rodas4P2(),
-        EnsembleThreads(),
+        Rodas5P(),
+        EnsembleSerial(),
         trajectories = n_Vmax_ATPase_values,
         abstol = 1e-15,
         reltol = 1e-8,
         save_everystep = false,
         save_start = false,
+        maxiters = 1e4,
     )
     mean_ATP_prod_eq_cons_frac = 0.0
     mean_ATP_conc = 0.0
@@ -217,9 +173,9 @@ using DataFrames, CSV, Dates
             counter += 1
         end
     end
-    mean_ATP_prod_eq_cons_frac = mean_ATP_prod_eq_cons_frac
-    mean_ATP_conc = mean_ATP_conc
-    mean_ATP_energy = mean_ATP_energy
+    mean_ATP_prod_eq_cons_frac = mean_ATP_prod_eq_cons_frac / counter
+    mean_ATP_conc = mean_ATP_conc / counter
+    mean_ATP_energy = mean_ATP_energy / counter
     Fract_success_sims = counter / n_Vmax_ATPase_values
     return (
         mean_ATP_prod_eq_cons_frac = mean_ATP_prod_eq_cons_frac,
@@ -257,9 +213,17 @@ res = @time pmap(
 
 two_model_sims_res_df = DataFrame(res)
 CSV.write(
-    "$(Dates.format(now(),"mmddyy"))_hist_two_enzyme_model_fixed_$(n_repeats)_repeats_no_allost_fixed_Pi.csv",
+    "Results/$(Dates.format(now(),"mmddyy"))_hist_two_enzyme_model_$(n_repeats)_repeats_no_allost_const_Pi.csv",
     two_model_sims_res_df,
 )
+# CSV.write(
+#     "Results/$(Dates.format(now(),"mmddyy"))_hist_two_enzyme_model_$(n_repeats)_repeats_w_allost_variable_Pi.csv",
+#     two_model_sims_res_df,
+# )
+# CSV.write(
+#     "Results/$(Dates.format(now(),"mmddyy"))_hist_two_enzyme_model_$(n_repeats)_repeats_no_allost_variable_Pi.csv",
+#     two_model_sims_res_df,
+# )
 
 # Remove all the workers
 for n in workers()
@@ -270,15 +234,15 @@ end
 #Plot results
 
 # Load simulation at a param range for histograms
-two_model_sims_res_df = CSV.read("Results/042423_hist_two_enzyme_model_fixed_Km_10mM_Pi_10000_repeats.csv", DataFrame)
-# two_model_sims_res_df = CSV.read("$(Dates.format(now(),"mmddyy"))_hist_two_enzyme_model_fixed_Km_10mM_Pi_$(n_repeats)_repeats.csv", DataFrame)
+two_model_sims_res_df = CSV.read("Results/071524_hist_two_enzyme_model_10000_repeats_w_allost_variable_Pi.csv", DataFrame)
+# two_model_sims_res_df = CSV.read("$(Dates.format(now(),"mmddyy"))_hist_two_enzyme_model_$(n_repeats)_repeats.csv", DataFrame)
 filter!(df -> df.Fract_success_sims == 1.0, two_model_sims_res_df)
 
 two_model_sims_res_df_no_allost_fixed_Pi =
-    CSV.read("Results/042423_hist_two_enzyme_model_fixed_Km_10mM_Pi_no_allost_10000_repeats_fixed_Pi.csv", DataFrame)
+    CSV.read("Results/071524_hist_two_enzyme_model_10000_repeats_no_allost_const_Pi.csv", DataFrame)
 filter!(df -> df.Fract_success_sims == 1.0, two_model_sims_res_df_no_allost_fixed_Pi)
 two_model_sims_res_df_no_allost =
-    CSV.read("Results/042423_hist_two_enzyme_model_fixed_Km_10mM_Pi_no_allost_10000_repeats.csv", DataFrame)
+    CSV.read("Results/071524_hist_two_enzyme_model_10000_repeats_no_allost_variable_Pi.csv", DataFrame)
 filter!(df -> df.Fract_success_sims == 1.0, two_model_sims_res_df_no_allost)
 
 # Plot the results
@@ -311,8 +275,6 @@ ax_two_enzyme_schematic.tellwidth = false
 hidedecorations!(ax_two_enzyme_schematic)
 hidespines!(ax_two_enzyme_schematic)
 
-
-
 # Plot hist of ATP supply and demand match in Monte Carlo sims of two enzyme model
 ax_hist = Axis(
     fig[1, 4:6],
@@ -325,14 +287,14 @@ ax_hist = Axis(
 )
 complete_hist = stephist!(
     ax_hist,
-    two_model_sims_res_df.ATP_prod_eq_cons_frac,
+    two_model_sims_res_df.mean_ATP_prod_eq_cons_frac,
     bins = range(0, 1.01, 20),
     normalization = :probability,
     color = Makie.wong_colors()[1],
 )
 no_allo_hist = stephist!(
     ax_hist,
-    two_model_sims_res_df_no_allost.ATP_prod_eq_cons_frac,
+    two_model_sims_res_df_no_allost.mean_ATP_prod_eq_cons_frac,
     bins = range(0, 1.01, 20),
     normalization = :probability,
     color = Makie.wong_colors()[6],
@@ -340,7 +302,7 @@ no_allo_hist = stephist!(
 )
 no_allo_fixed_Pi_hist = stephist!(
     ax_hist,
-    two_model_sims_res_df_no_allost_fixed_Pi.ATP_prod_eq_cons_frac,
+    two_model_sims_res_df_no_allost_fixed_Pi.mean_ATP_prod_eq_cons_frac,
     bins = range(0, 1.01, 20),
     normalization = :probability,
     color = Makie.wong_colors()[3],
@@ -370,14 +332,14 @@ ax_hist = Axis(
 )
 complete_hist = stephist!(
     ax_hist,
-    two_model_sims_res_df.ATP_conc,
+    two_model_sims_res_df.mean_ATP_conc,
     bins = range(0, 1, 20),
     normalization = :probability,
     color = Makie.wong_colors()[1],
 )
 no_allo_hist = stephist!(
     ax_hist,
-    two_model_sims_res_df_no_allost.ATP_conc,
+    two_model_sims_res_df_no_allost.mean_ATP_conc,
     bins = range(0, 1, 20),
     normalization = :probability,
     color = Makie.wong_colors()[6],
@@ -385,7 +347,7 @@ no_allo_hist = stephist!(
 )
 no_allo_fixed_Pi_hist = stephist!(
     ax_hist,
-    two_model_sims_res_df_no_allost_fixed_Pi.ATP_conc,
+    two_model_sims_res_df_no_allost_fixed_Pi.mean_ATP_conc,
     bins = range(0, 1, 20),
     normalization = :probability,
     color = Makie.wong_colors()[3],
@@ -413,23 +375,23 @@ ax_hist = Axis(
 )
 complete_hist = stephist!(
     ax_hist,
-    two_model_sims_res_df.ATP_energy,
-    bins = range(0, 1.1 * maximum(two_model_sims_res_df.ATP_energy), 20),
+    two_model_sims_res_df.mean_ATP_energy,
+    bins = range(0, 1.1 * maximum(two_model_sims_res_df.mean_ATP_energy), 20),
     normalization = :probability,
     color = Makie.wong_colors()[1],
 )
 no_allo_hist = stephist!(
     ax_hist,
-    two_model_sims_res_df_no_allost.ATP_energy,
-    bins = range(0, 1.1 * maximum(two_model_sims_res_df.ATP_energy), 20),
+    two_model_sims_res_df_no_allost.mean_ATP_energy,
+    bins = range(0, 1.1 * maximum(two_model_sims_res_df.mean_ATP_energy), 20),
     normalization = :probability,
     color = Makie.wong_colors()[6],
     linestyle = :dot,
 )
 no_allo_fixed_Pi_hist = stephist!(
     ax_hist,
-    two_model_sims_res_df_no_allost_fixed_Pi.ATP_energy,
-    bins = range(0, 1.1 * maximum(two_model_sims_res_df.ATP_energy), 20),
+    two_model_sims_res_df_no_allost_fixed_Pi.mean_ATP_energy,
+    bins = range(0, 1.1 * maximum(two_model_sims_res_df.mean_ATP_energy), 20),
     normalization = :probability,
     color = Makie.wong_colors()[3],
     linestyle = :dash,
