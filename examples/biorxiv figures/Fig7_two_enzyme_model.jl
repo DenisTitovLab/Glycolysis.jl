@@ -1,5 +1,5 @@
 include("for_Fig7_TwoEnzymeModel.jl")
-using DifferentialEquations, CairoMakie, LabelledArrays
+using OrdinaryDiffEq, CairoMakie, LabelledArrays
 using DataFrames, CSV, Dates
 using FileIO
 
@@ -23,7 +23,7 @@ function sol_at_ATPase_range(
     ensemble_prob = EnsembleProblem(prob, prob_func = prob_func)
     sim = solve(
         ensemble_prob,
-        Rodas5P(),
+        Rodas4P2(),
         EnsembleThreads(),
         trajectories = n_Vmax_ATPase_values,
         abstol = 1e-18,
@@ -40,6 +40,51 @@ function sol_at_ATPase_range(
     ATPases_succ_sims = [ATPases[i] for (i, sol) in enumerate(sim) if sol.retcode == ReturnCode.Success]
 
     return (ATP_conc = ATP_conc, ATP_energy = ATP_energy, ATPase_Vmax = ATPases_succ_sims / pathway_Vmax)
+end
+
+function minimal_glycolysis_ODEs_fixed_Pi(ds, s, params, t)
+    ds.Glu = 0.0
+    ds.X = (
+        rate_Enz1(s.Glu, s.ATP, s.X, s.ADP, s.Phosphate, params) -
+        rate_Enz2(s.X, s.Phosphate, s.ADP, s.Lac, s.ATP, params)
+    )
+    ds.Lac = 0
+    ds.ATP = (
+        -rate_Enz1(s.Glu, s.ATP, s.X, s.ADP, s.Phosphate, params) +
+        2 * rate_Enz2(s.X, s.Phosphate, s.ADP, s.Lac, s.ATP, params) -
+        minimal_model_rateATPase(s.ATP, s.ADP, s.Phosphate, params)
+    )
+    ds.ADP = (
+        rate_Enz1(s.Glu, s.ATP, s.X, s.ADP, s.Phosphate, params) -
+        2 * rate_Enz2(s.X, s.Phosphate, s.ADP, s.Lac, s.ATP, params) +
+        minimal_model_rateATPase(s.ATP, s.ADP, s.Phosphate, params)
+    )
+    # ds.Phosphate =
+    #     minimal_model_rateATPase(s.ATP, s.ADP, s.Phosphate, params) -
+    #     rate_Enz2(s.X, s.Phosphate, s.ADP, s.Lac, s.ATP, params)
+    ds.Phosphate = 0.0
+end
+
+function minimal_glycolysis_ODEs_Enz1_eq_ATPase(ds, s, params, t)
+    ds.Glu = 0.0
+    ds.X = (
+        minimal_model_rateATPase(s.ATP, s.ADP, s.Phosphate, params) -
+        rate_Enz2(s.X, s.Phosphate, s.ADP, s.Lac, s.ATP, params)
+    )
+    ds.Lac = 0
+    ds.ATP = (
+        -minimal_model_rateATPase(s.ATP, s.ADP, s.Phosphate, params) +
+        2 * rate_Enz2(s.X, s.Phosphate, s.ADP, s.Lac, s.ATP, params) -
+        minimal_model_rateATPase(s.ATP, s.ADP, s.Phosphate, params)
+    )
+    ds.ADP = (
+        minimal_model_rateATPase(s.ATP, s.ADP, s.Phosphate, params) -
+        2 * rate_Enz2(s.X, s.Phosphate, s.ADP, s.Lac, s.ATP, params) +
+        minimal_model_rateATPase(s.ATP, s.ADP, s.Phosphate, params)
+    )
+    ds.Phosphate =
+        minimal_model_rateATPase(s.ATP, s.ADP, s.Phosphate, params) -
+        rate_Enz2(s.X, s.Phosphate, s.ADP, s.Lac, s.ATP, params)
 end
 
 # Calculate complete model results
@@ -120,11 +165,10 @@ end
 
 ##
 #Precalculate MC simulation of two enzyme model
-#This code block takes ~ 1 hour to run on 8 core machine
 using Distributed
 addprocs(8; exeflags = "--project")
 @everywhere include("for_Fig7_TwoEnzymeModel.jl")
-@everywhere using DifferentialEquations
+@everywhere using OrdinaryDiffEq
 
 using DataFrames, CSV, Dates
 
@@ -134,8 +178,7 @@ using DataFrames, CSV, Dates
     pathway_Vmax = min(params.Enz1_Vmax, params.Enz2_Vmax)
 
     ATPases = 10 .^ range(log10(0.01), log10(1.0), n_Vmax_ATPase_values) .* pathway_Vmax
-    # prob = ODEProblem(minimal_glycolysis_ODEs, initial_concentrations, tspan, params) #uncomment to to keep variable Pi
-    prob = ODEProblem(minimal_glycolysis_ODEs_fixed_Pi, initial_concentrations, tspan, params) #uncomment to fix Pi
+    prob = ODEProblem(minimal_glycolysis_ODEs, initial_concentrations, tspan, params)
     function prob_func(prob, i, repeat)
         prob.p.ATPase_Vmax = ATPases[i]
         prob
@@ -143,14 +186,13 @@ using DataFrames, CSV, Dates
     ensemble_prob = EnsembleProblem(prob, prob_func = prob_func)
     sim = solve(
         ensemble_prob,
-        Rodas5P(),
-        EnsembleSerial(),
+        Rodas4P2(),
+        EnsembleThreads(),
         trajectories = n_Vmax_ATPase_values,
         abstol = 1e-15,
         reltol = 1e-8,
         save_everystep = false,
         save_start = false,
-        maxiters = 1e4,
     )
     mean_ATP_prod_eq_cons_frac = 0.0
     mean_ATP_conc = 0.0
@@ -173,9 +215,9 @@ using DataFrames, CSV, Dates
             counter += 1
         end
     end
-    mean_ATP_prod_eq_cons_frac = mean_ATP_prod_eq_cons_frac / counter
-    mean_ATP_conc = mean_ATP_conc / counter
-    mean_ATP_energy = mean_ATP_energy / counter
+    mean_ATP_prod_eq_cons_frac = mean_ATP_prod_eq_cons_frac
+    mean_ATP_conc = mean_ATP_conc
+    mean_ATP_energy = mean_ATP_energy
     Fract_success_sims = counter / n_Vmax_ATPase_values
     return (
         mean_ATP_prod_eq_cons_frac = mean_ATP_prod_eq_cons_frac,
@@ -190,10 +232,10 @@ random_log_range(start_val, end_val) = 10^(start_val + (end_val - start_val) * r
 
 function generate_random_params()
     rand_model_params = LVector(
-        # Enz1_L = random_log_range(-5, -1), #uncomment to include allostery
-        # Enz1_n = rand([1, 2, 3, 4]), #uncomment to include allostery
-        Enz1_L = 0.0, #uncomment to fix L=0 and remove allostery
-        Enz1_n = 1, #uncomment to fix n=1 and remove allostery
+        # Enz1_L = random_log_range(-5, -1),
+        # Enz1_n = rand([1, 2, 3, 4]),
+        Enz1_L = 0.0,
+        Enz1_n = 1,
         Enz1_Vmax = random_log_range(-3, -1),
         Enz1_Keq = random_log_range(1, 4),
         Enz2_Vmax = random_log_range(-3, -1),
@@ -213,17 +255,9 @@ res = @time pmap(
 
 two_model_sims_res_df = DataFrame(res)
 CSV.write(
-    "Results/$(Dates.format(now(),"mmddyy"))_hist_two_enzyme_model_$(n_repeats)_repeats_no_allost_const_Pi.csv",
+    "$(Dates.format(now(),"mmddyy"))_hist_two_enzyme_model_fixed_Km_10mM_Pi_no_allost_$(n_repeats)_repeats_fixed_Pi.csv",
     two_model_sims_res_df,
 )
-# CSV.write(
-#     "Results/$(Dates.format(now(),"mmddyy"))_hist_two_enzyme_model_$(n_repeats)_repeats_w_allost_variable_Pi.csv",
-#     two_model_sims_res_df,
-# )
-# CSV.write(
-#     "Results/$(Dates.format(now(),"mmddyy"))_hist_two_enzyme_model_$(n_repeats)_repeats_no_allost_variable_Pi.csv",
-#     two_model_sims_res_df,
-# )
 
 # Remove all the workers
 for n in workers()
@@ -234,15 +268,15 @@ end
 #Plot results
 
 # Load simulation at a param range for histograms
-two_model_sims_res_df = CSV.read("Results/071524_hist_two_enzyme_model_10000_repeats_w_allost_variable_Pi.csv", DataFrame)
-# two_model_sims_res_df = CSV.read("$(Dates.format(now(),"mmddyy"))_hist_two_enzyme_model_$(n_repeats)_repeats.csv", DataFrame)
+two_model_sims_res_df = CSV.read("Results/042423_hist_two_enzyme_model_fixed_Km_10mM_Pi_10000_repeats.csv", DataFrame)
+# two_model_sims_res_df = CSV.read("$(Dates.format(now(),"mmddyy"))_hist_two_enzyme_model_fixed_Km_10mM_Pi_$(n_repeats)_repeats.csv", DataFrame)
 filter!(df -> df.Fract_success_sims == 1.0, two_model_sims_res_df)
 
 two_model_sims_res_df_no_allost_fixed_Pi =
-    CSV.read("Results/071524_hist_two_enzyme_model_10000_repeats_no_allost_const_Pi.csv", DataFrame)
+    CSV.read("Results/042423_hist_two_enzyme_model_fixed_Km_10mM_Pi_no_allost_10000_repeats_fixed_Pi.csv", DataFrame)
 filter!(df -> df.Fract_success_sims == 1.0, two_model_sims_res_df_no_allost_fixed_Pi)
 two_model_sims_res_df_no_allost =
-    CSV.read("Results/071524_hist_two_enzyme_model_10000_repeats_no_allost_variable_Pi.csv", DataFrame)
+    CSV.read("Results/042423_hist_two_enzyme_model_fixed_Km_10mM_Pi_no_allost_10000_repeats.csv", DataFrame)
 filter!(df -> df.Fract_success_sims == 1.0, two_model_sims_res_df_no_allost)
 
 # Plot the results
@@ -256,11 +290,11 @@ set_theme!(Theme(fontsize = 6, Axis = (
     yticklabelpad = 1,
     ylabelpadding = 3,
 )))
-fig = Figure(size = size_pt)
+fig = Figure(resolution = size_pt)
 
 
 two_enzyme_schematic = load(
-    "111523_Two_enzyme_glycolysis_schematic_w_feedback_w_pi_trap.png",
+    "/Users/Denis/Library/Mobile Documents/com~apple~CloudDocs/My Articles/Glycolysis model paper/Figures/Two_enzyme_glycolysis_schematic_w_feedback.png",
 )
 
 ax_two_enzyme_schematic, im = image(
@@ -269,11 +303,13 @@ ax_two_enzyme_schematic, im = image(
     axis = (aspect = DataAspect(), title = "Two-enzyme model"),
 )
 ax_two_enzyme_schematic.alignmode = Mixed(top = -15, bottom = -5, left = -10)
-ax_two_enzyme_schematic.width = 80
+ax_two_enzyme_schematic.width = 70
 ax_two_enzyme_schematic.tellwidth = false
 
 hidedecorations!(ax_two_enzyme_schematic)
 hidespines!(ax_two_enzyme_schematic)
+
+
 
 # Plot hist of ATP supply and demand match in Monte Carlo sims of two enzyme model
 ax_hist = Axis(
@@ -287,14 +323,14 @@ ax_hist = Axis(
 )
 complete_hist = stephist!(
     ax_hist,
-    two_model_sims_res_df.mean_ATP_prod_eq_cons_frac,
+    two_model_sims_res_df.ATP_prod_eq_cons_frac,
     bins = range(0, 1.01, 20),
     normalization = :probability,
     color = Makie.wong_colors()[1],
 )
 no_allo_hist = stephist!(
     ax_hist,
-    two_model_sims_res_df_no_allost.mean_ATP_prod_eq_cons_frac,
+    two_model_sims_res_df_no_allost.ATP_prod_eq_cons_frac,
     bins = range(0, 1.01, 20),
     normalization = :probability,
     color = Makie.wong_colors()[6],
@@ -302,7 +338,7 @@ no_allo_hist = stephist!(
 )
 no_allo_fixed_Pi_hist = stephist!(
     ax_hist,
-    two_model_sims_res_df_no_allost_fixed_Pi.mean_ATP_prod_eq_cons_frac,
+    two_model_sims_res_df_no_allost_fixed_Pi.ATP_prod_eq_cons_frac,
     bins = range(0, 1.01, 20),
     normalization = :probability,
     color = Makie.wong_colors()[3],
@@ -312,9 +348,11 @@ axislegend(
     ax_hist,
     [complete_hist, no_allo_hist, no_allo_fixed_Pi_hist],
     ["+ allost.", "– allost.", "– allost.\n[Pi]=5mM"],
-    position = (-0.3, 1.1),
+    position = :lt,
+    # position = (1.075, 1.05),
     rowgap = 1,
     framevisible = false,
+    padding = (-5, -5, 0, -8),
     patchsize = (10, 5),
 )
 
@@ -332,14 +370,14 @@ ax_hist = Axis(
 )
 complete_hist = stephist!(
     ax_hist,
-    two_model_sims_res_df.mean_ATP_conc,
+    two_model_sims_res_df.ATP_conc,
     bins = range(0, 1, 20),
     normalization = :probability,
     color = Makie.wong_colors()[1],
 )
 no_allo_hist = stephist!(
     ax_hist,
-    two_model_sims_res_df_no_allost.mean_ATP_conc,
+    two_model_sims_res_df_no_allost.ATP_conc,
     bins = range(0, 1, 20),
     normalization = :probability,
     color = Makie.wong_colors()[6],
@@ -347,7 +385,7 @@ no_allo_hist = stephist!(
 )
 no_allo_fixed_Pi_hist = stephist!(
     ax_hist,
-    two_model_sims_res_df_no_allost_fixed_Pi.mean_ATP_conc,
+    two_model_sims_res_df_no_allost_fixed_Pi.ATP_conc,
     bins = range(0, 1, 20),
     normalization = :probability,
     color = Makie.wong_colors()[3],
@@ -357,9 +395,11 @@ axislegend(
     ax_hist,
     [complete_hist, no_allo_hist, no_allo_fixed_Pi_hist],
     ["+ allost.", "– allost.", "– allost.\n[Pi]=5mM"],
-    position = (0.5, 1.1),
+    position = :ct,
+    # position = (1.075, 1.05),
     rowgap = 1,
     framevisible = false,
+    padding = (-5, -5, 0, -8),
     patchsize = (10, 5),
 )
 
@@ -375,23 +415,23 @@ ax_hist = Axis(
 )
 complete_hist = stephist!(
     ax_hist,
-    two_model_sims_res_df.mean_ATP_energy,
-    bins = range(0, 1.1 * maximum(two_model_sims_res_df.mean_ATP_energy), 20),
+    two_model_sims_res_df.ATP_energy,
+    bins = range(0, 1.1 * maximum(two_model_sims_res_df.ATP_energy), 20),
     normalization = :probability,
     color = Makie.wong_colors()[1],
 )
 no_allo_hist = stephist!(
     ax_hist,
-    two_model_sims_res_df_no_allost.mean_ATP_energy,
-    bins = range(0, 1.1 * maximum(two_model_sims_res_df.mean_ATP_energy), 20),
+    two_model_sims_res_df_no_allost.ATP_energy,
+    bins = range(0, 1.1 * maximum(two_model_sims_res_df.ATP_energy), 20),
     normalization = :probability,
     color = Makie.wong_colors()[6],
     linestyle = :dot,
 )
 no_allo_fixed_Pi_hist = stephist!(
     ax_hist,
-    two_model_sims_res_df_no_allost_fixed_Pi.mean_ATP_energy,
-    bins = range(0, 1.1 * maximum(two_model_sims_res_df.mean_ATP_energy), 20),
+    two_model_sims_res_df_no_allost_fixed_Pi.ATP_energy,
+    bins = range(0, 1.1 * maximum(two_model_sims_res_df.ATP_energy), 20),
     normalization = :probability,
     color = Makie.wong_colors()[3],
     linestyle = :dash,
@@ -400,9 +440,11 @@ axislegend(
     ax_hist,
     [complete_hist, no_allo_hist, no_allo_fixed_Pi_hist],
     ["+ allost.", "– allost.", "– allost.\n[Pi]=5mM"],
-    position = (-0.3, 1.1),
+    position = :lt,
+    # position = (1.075, 1.05),
     rowgap = 1,
     framevisible = false,
+    padding = (-5, -5, 0, -8),
     patchsize = (10, 5),
 )
 
@@ -418,7 +460,7 @@ ax_ATPase_range = Axis(
     # yscale = log10,
     xticks = [0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0],
     # xtickformat = xs -> ["$(Int(round(x*100)))%" for x in xs],
-    xtickformat = xs -> ["$(100*x < 1.0 ? round(x*100, sigdigits=1) : Int(round(x*100)))" for x in xs],
+    xtickformat = xs -> ["$(100*x < 1.0 ? round(x*100, sigdigits=1) : Int(round(x*100)))%" for x in xs],
     ytickformat = ys -> ["$(Int(round(y*1000, sigdigits=2)))" for y in ys],
     # yticklabelcolor = Makie.wong_colors()[1],
     # ylabelcolor = Makie.wong_colors()[1],
@@ -457,9 +499,10 @@ text!(
 )
 axislegend(
     ax_ATPase_range,
-    position = (1.4, -0.01),
+    position = (0.9, -0.01),
     rowgap = 0,
     framevisible = false,
+    padding = (-5, -5, 0, -8),
     patchsize = (10, 5),
 )
 
@@ -474,7 +517,7 @@ ax_ATPase_range = Axis(
     # yscale = log10,
     xticks = [0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0],
     # xtickformat = xs -> ["$(Int(round(x*100)))%" for x in xs],
-    xtickformat = xs -> ["$(100*x < 1.0 ? round(x*100, sigdigits=1) : Int(round(x*100)))" for x in xs],
+    xtickformat = xs -> ["$(100*x < 1.0 ? round(x*100, sigdigits=1) : Int(round(x*100)))%" for x in xs],
     ytickformat = ys -> ["$(Int(round(y*1000, sigdigits=2)))" for y in ys],
     # yticklabelcolor = Makie.wong_colors()[1],
     # ylabelcolor = Makie.wong_colors()[1],
@@ -513,9 +556,10 @@ text!(
 )
 axislegend(
     ax_ATPase_range,
-    position = (0.0, -0.01),
+    position = (0.9, 0.1),
     rowgap = 3,
     framevisible = false,
+    padding = (-5, -5, 0, -8),
     patchsize = (10, 5),
 )
 
@@ -530,7 +574,7 @@ ax_ATPase_range = Axis(
     # yscale = log10,
     xticks = [0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0],
     # xtickformat = xs -> ["$(Int(round(x*100)))%" for x in xs],
-    xtickformat = xs -> ["$(100*x < 1.0 ? round(x*100, sigdigits=1) : Int(round(x*100)))" for x in xs],
+    xtickformat = xs -> ["$(100*x < 1.0 ? round(x*100, sigdigits=1) : Int(round(x*100)))%" for x in xs],
     ytickformat = ys -> ["$(Int(round(y*1000, sigdigits=2)))" for y in ys],
     # yticklabelcolor = Makie.wong_colors()[1],
     # ylabelcolor = Makie.wong_colors()[1],
@@ -570,9 +614,11 @@ text!(
 )
 axislegend(
     ax_ATPase_range,
-    position = (0.7, 0.3),
+    position = (0.0, 0.3),
+    # position = :lc,
     rowgap = 3,
     framevisible = false,
+    padding = (-5, -5, 0, -8),
     patchsize = (10, 5),
 )
 
@@ -587,7 +633,7 @@ ax_ATPase_range = Axis(
     # yscale = log10,
     xticks = [0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0],
     # xtickformat = xs -> ["$(Int(round(x*100)))%" for x in xs],
-    xtickformat = xs -> ["$(100*x < 1.0 ? round(x*100, sigdigits=1) : Int(round(x*100)))" for x in xs],
+    xtickformat = xs -> ["$(100*x < 1.0 ? round(x*100, sigdigits=1) : Int(round(x*100)))%" for x in xs],
     ytickformat = ys -> ["$(Int(round(y*1000, sigdigits=2)))" for y in ys],
     # yticklabelcolor = Makie.wong_colors()[1],
     # ylabelcolor = Makie.wong_colors()[1],
@@ -625,9 +671,10 @@ text!(
 )
 axislegend(
     ax_ATPase_range,
-    position = (0.5, 0.1),
+    position = (0.9, 0.1),
     rowgap = 3,
     framevisible = false,
+    padding = (-5, -5, 0, -8),
     patchsize = (10, 5),
 )
 
@@ -647,4 +694,4 @@ label_h = fig[2, 10, TopLeft()] = Label(fig, "H", fontsize = 12, halign = :right
 fig
 
 # uncomment the line below to save the plot
-save("Results/$(Dates.format(now(),"mmddyy"))_Fig7_two_enzyme_model.png", fig, px_per_unit = 4)
+# save("Results/$(Dates.format(now(),"mmddyy"))_Fig7_two_enzyme_model.png", fig, px_per_unit = 4)
