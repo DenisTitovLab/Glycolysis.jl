@@ -97,7 +97,7 @@ PFKP_reg = [:PFKP_L, :PFKP_K_i_ATP_reg, :PFKP_K_a_ADP_reg, :PFKP_K_Phosphate]
 HK1_PFKP_reg = [HK1_reg; PFKP_reg]
 HK1_PFKP_Km_Vmax = [HK1_Km_Vmax; PFKP_Km_Vmax]
 PKM2_reg = [:PKM2_a_KdF16BP, :PKM2_i_KdF16BP]
-GAPDH = [
+GAPDH_all = [
     param for param in propertynames(glycolysis_params) if occursin("GAPDH", string(param))
 ]
 
@@ -105,7 +105,7 @@ Keqs =
     [param for param in propertynames(glycolysis_params) if occursin("Keq", string(param))]
 Other = [
     param for param in propertynames(glycolysis_params) if
-    param ∉ [HK1_PFKP_Km_Vmax; HK1_PFKP_reg; GAPDH]
+    param ∉ [HK1_PFKP_Km_Vmax; HK1_PFKP_reg; GAPDH_all]
 ]
 
 params_group_names = [:All, :HK1_PFKP_Km_Vmax, :HK1_PFKP_reg, :GAPDH, :All_Other]
@@ -113,7 +113,7 @@ params_names = [
     [name for name in propertynames(glycolysis_params)],
     HK1_PFKP_Km_Vmax,
     HK1_PFKP_reg,
-    GAPDH,
+    GAPDH_all,
     Other,
 ]
 
@@ -506,4 +506,4 @@ label_f =
 fig
 
 # uncomment the line below to save the plot
-save("Results/$(Dates.format(now(),"mmddyy"))_FigS3_global_sensitivity_analysis.png", fig, px_per_unit = 4)
+save("Results/$(Dates.format(now(),"mmddyy"))_Fig4_fig_suppl1_global_sensitivity_analysis.png", fig, px_per_unit = 4)
