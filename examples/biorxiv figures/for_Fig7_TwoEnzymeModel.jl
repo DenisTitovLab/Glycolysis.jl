@@ -55,6 +55,48 @@ function minimal_glycolysis_ODEs(ds, s, params, t)
         rate_Enz2(s.X, s.Phosphate, s.ADP, s.Lac, s.ATP, params)
 end
 
+function minimal_glycolysis_ODEs_fixed_Pi(ds, s, params, t)
+    ds.Glu = 0.0
+    ds.X = (
+        rate_Enz1(s.Glu, s.ATP, s.X, s.ADP, s.Phosphate, params) -
+        rate_Enz2(s.X, s.Phosphate, s.ADP, s.Lac, s.ATP, params)
+    )
+    ds.Lac = 0
+    ds.ATP = (
+        -rate_Enz1(s.Glu, s.ATP, s.X, s.ADP, s.Phosphate, params) +
+        2 * rate_Enz2(s.X, s.Phosphate, s.ADP, s.Lac, s.ATP, params) -
+        minimal_model_rateATPase(s.ATP, s.ADP, s.Phosphate, params)
+    )
+    ds.ADP = (
+        rate_Enz1(s.Glu, s.ATP, s.X, s.ADP, s.Phosphate, params) -
+        2 * rate_Enz2(s.X, s.Phosphate, s.ADP, s.Lac, s.ATP, params) +
+        minimal_model_rateATPase(s.ATP, s.ADP, s.Phosphate, params)
+    )
+    ds.Phosphate = 0.0
+end
+
+function minimal_glycolysis_ODEs_Enz1_eq_ATPase(ds, s, params, t)
+    ds.Glu = 0.0
+    ds.X = (
+        minimal_model_rateATPase(s.ATP, s.ADP, s.Phosphate, params) -
+        rate_Enz2(s.X, s.Phosphate, s.ADP, s.Lac, s.ATP, params)
+    )
+    ds.Lac = 0
+    ds.ATP = (
+        -minimal_model_rateATPase(s.ATP, s.ADP, s.Phosphate, params) +
+        2 * rate_Enz2(s.X, s.Phosphate, s.ADP, s.Lac, s.ATP, params) -
+        minimal_model_rateATPase(s.ATP, s.ADP, s.Phosphate, params)
+    )
+    ds.ADP = (
+        minimal_model_rateATPase(s.ATP, s.ADP, s.Phosphate, params) -
+        2 * rate_Enz2(s.X, s.Phosphate, s.ADP, s.Lac, s.ATP, params) +
+        minimal_model_rateATPase(s.ATP, s.ADP, s.Phosphate, params)
+    )
+    ds.Phosphate =
+        minimal_model_rateATPase(s.ATP, s.ADP, s.Phosphate, params) -
+        rate_Enz2(s.X, s.Phosphate, s.ADP, s.Lac, s.ATP, params)
+end
+
 function minimal_glycolysis_conc_to_disequilibrium_ratios(s, params)
     k = @LVector eltype(s) (:Q_Keq_Enz1, :Q_Keq_Enz2, :Q_Keq_ATPase)
     k.Q_Keq_Enz1 = ((s.X * s.ADP) / (s.Glu * s.ATP)) / params.Enz1_Keq
