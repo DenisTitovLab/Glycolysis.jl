@@ -1,22 +1,10 @@
 cd(@__DIR__)
 using Pkg
 Pkg.activate(".")
+Pkg.resolve()
 Pkg.instantiate()
 
-#=
-Comments about duration and memory use:
-atol and btol affect the memory usage and time of the calculation.
-atol = 1e-15 and btol = 1e-8 are 10s per run and 200MB per run
-atol = 1e-14 and btol = 1e-7 are 5s per run and 100MB per run
-atol = 1e-13 and btol = 1e-6 are 2s per run and 60MB per run
-It might be beneficial to decrease tolerance from default atol = 1e-15 and btol = 1e-8 to ensure that
-the calculation on a cluster is not killed due to memory usage and doesn;t take too many hours.
-=#
-
 using Distributed, ClusterManagers
-
-#Increase time before worker terminates without hearing from master process. Useful for large number of cores.
-ENV["JULIA_WORKER_TIMEOUT"] = 600.0
 
 # ENV["SLURM_JOB_CPUS_PER_NODE"] give number of cores in "40(x4),32,20" format
 # "40(x2),32,20" can be parsed to 132 using code below to get total number of allocated cores
@@ -25,7 +13,7 @@ subs = Dict("x" => "*", "(" => "", ")" => "");
 np = sum(eval(Meta.parse(replace(ENV["SLURM_JOB_CPUS_PER_NODE"], r"x|\(|\)" => s -> subs[s]))))
 addprocs(SlurmManager(np); exeflags = "--project")
 
-# # comment all lines above and uncomment two line below if running on local computer
+# comment all lines above and uncomment two line below if running on local computer
 # using Distributed
 # addprocs(8; exeflags = "--project")
 
@@ -34,12 +22,7 @@ addprocs(SlurmManager(np); exeflags = "--project")
 using GlobalSensitivity, QuasiMonteCarlo, LabelledArrays, DataFrames, CSV, Dates
 
 # write a function outputting AUC of [ATP] estimated as the sum of [ATP] over log scale
-@everywhere function glycolysis_output(
-    cofactor_pool_scaler,
-    glycolysis_params,
-    glycolysis_init_conc,
-    n_Vmax_ATPase_values,
-)
+@everywhere function glycolysis_output(cofactor_pool_scaler, glycolysis_params, glycolysis_init_conc, n_Vmax_ATPase_values)
     Adenine_pool_scaler, NAD_pool_scaler, Pi_scaler = cofactor_pool_scaler
     tspan = (0.0, 1e8)
     Glycolysis_Vmax = 2 * glycolysis_params.HK1_Vmax * glycolysis_params.HK1_Conc
@@ -55,13 +38,13 @@ using GlobalSensitivity, QuasiMonteCarlo, LabelledArrays, DataFrames, CSV, Dates
     scaled_init_conc.G6P = Pi_scaler * glycolysis_init_conc.G6P
     scaled_init_conc.F6P = Pi_scaler * glycolysis_init_conc.F6P
     scaled_init_conc.F16BP = Pi_scaler * glycolysis_init_conc.F16BP
-    scaled_init_conc.GAP = Pi_scaler * glycolysis_init_conc.GAP
-    scaled_init_conc.DHAP = Pi_scaler * glycolysis_init_conc.DHAP
-    scaled_init_conc.BPG = Pi_scaler * glycolysis_init_conc.BPG
-    scaled_init_conc.ThreePG = Pi_scaler * glycolysis_init_conc.ThreePG
-    scaled_init_conc.TwoPG = Pi_scaler * glycolysis_init_conc.TwoPG
-    scaled_init_conc.PEP = Pi_scaler * glycolysis_init_conc.PEP
-    scaled_init_conc.Phosphate = Pi_scaler * glycolysis_init_conc.Phosphate
+    scaled_init_conc.GAP = Pi_scaler * glycolysis_init_conc.GAP 
+    scaled_init_conc.DHAP = Pi_scaler * glycolysis_init_conc.DHAP 
+    scaled_init_conc.BPG = Pi_scaler * glycolysis_init_conc.BPG 
+    scaled_init_conc.ThreePG = Pi_scaler * glycolysis_init_conc.ThreePG 
+    scaled_init_conc.TwoPG = Pi_scaler * glycolysis_init_conc.TwoPG 
+    scaled_init_conc.PEP = Pi_scaler * glycolysis_init_conc.PEP 
+    scaled_init_conc.Phosphate = Pi_scaler * glycolysis_init_conc.Phosphate 
 
     Adenine_pool = scaled_init_conc.ATP + scaled_init_conc.ADP + scaled_init_conc.AMP
     prob = ODEProblem(glycolysis_ODEs, scaled_init_conc, tspan, glycolysis_params)
@@ -72,11 +55,11 @@ using GlobalSensitivity, QuasiMonteCarlo, LabelledArrays, DataFrames, CSV, Dates
     ensemble_prob = EnsembleProblem(prob, prob_func = prob_func)
     sim = solve(
         ensemble_prob,
-        Rodas5P(),
+        Rodas4(),
         EnsembleSerial(),
         trajectories = n_Vmax_ATPase_values,
-        abstol = 1e-13,
-        reltol = 1e-6,
+        abstol = 1e-12,
+        reltol = 1e-5,
         save_everystep = false,
         save_start = false,
     )
@@ -100,6 +83,7 @@ function parallel_output(p, glycolysis_params, glycolysis_init_conc, n_Vmax_ATPa
     return permutedims(res)
 end
 
+
 ##
 # Calculate data for histogram of variance
 fold_range = 3
@@ -108,22 +92,20 @@ n_bootstrap = 10_000
 res = @time pmap(
     x -> glycolysis_output(x, glycolysis_params, glycolysis_init_conc, n_Vmax_ATPase_values),
     [sqrt(fold_range) .^ (-2 .+ 4 * rand(3)) for i = 1:n_bootstrap],
-)
-CSV.write("$(Dates.format(now(),"mmddyy"))_hist_ATP_AUC_$(n_bootstrap)_runs_$(fold_range)x_range_pool_sizes.csv", DataFrame(all_params = res))
+) 
+CSV.write("$(Dates.format(now(),"mmddyy"))_hist_ATP_AUC_$(n_bootstrap)_runs_3x_pool_sizes.csv", DataFrame(all_params = res))
 ##
 
 # generate design matrices
-n_samples = 10_000 #number of bootstrapped datasets to use
-n_params = 3
-fold_range = 3
-lb = ones(n_params) / fold_range #lower bound for parameter
-ub = ones(n_params) * fold_range #upper bound for parameter
+n_bootstrap = 20_000 #number of bootstrapped datasets to use
+lb = ones(3) / 3 #lower bound for parameter
+ub = ones(3) * 3 #upper bound for parameter
 sampler = SobolSample()
-A, B = QuasiMonteCarlo.generate_design_matrices(n_samples, lb, ub, sampler)
+A, B = QuasiMonteCarlo.generate_design_matrices(n_bootstrap, lb, ub, sampler)
 
 # do global sensitivity analysis
 n_Vmax_ATPase_values = 100
-sobol_sens = @time gsa(
+sobol_sens = gsa(
     x -> parallel_output(x, glycolysis_params, glycolysis_init_conc, n_Vmax_ATPase_values),
     Sobol(),
     A,
@@ -131,16 +113,15 @@ sobol_sens = @time gsa(
     batch = true,
 )
 
-# save the results
-S1 = @LArray sobol_sens.S1 (:Adenine_pool_scaler, :NAD_pool_scaler, :Pi_scaler)
-ST = @LArray sobol_sens.ST (:Adenine_pool_scaler, :NAD_pool_scaler, :Pi_scaler)
+S1_labelled = @LArray sobol_sens.S1 (:Adenine_pool_scaler, :NAD_pool_scaler, :Pi_scaler)
+ST_labelled = @LArray sobol_sens.ST (:Adenine_pool_scaler, :NAD_pool_scaler, :Pi_scaler)
 
 df = DataFrame()
-push!(df, merge((Row = "S1",), convert(NamedTuple, S1)))
-push!(df, merge((Row = "ST",), convert(NamedTuple, ST)))
+push!(df, merge((Row = "S1",), convert(NamedTuple, S1_labelled)))
+push!(df, merge((Row = "ST",), convert(NamedTuple, ST_labelled)))
 
 CSV.write(
-    "$(Dates.format(now(),"mmddyy"))_ATP_AUC_gsa_sobol_cofactor_pool_$(n_samples)_$(fold_range)x_range.csv",
+    "$(Dates.format(now(),"mmddyy"))_ATP_AUC_gsa_sobol_cofactor_pool_$(n_bootstrap)_3x_range.csv",
     df,
 )
 
@@ -148,3 +129,4 @@ CSV.write(
 for n in workers()
     rmprocs(n)
 end
+

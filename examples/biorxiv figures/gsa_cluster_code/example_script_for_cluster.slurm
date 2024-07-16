@@ -19,7 +19,7 @@
 
 # Load software
 module purge
-module load julia/1.10.2
+module load julia/1.8.2
 
 # Run Julia script
 julia Sensitivity_analysis_ATP_AUC_cluster.jl
