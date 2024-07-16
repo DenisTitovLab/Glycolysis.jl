@@ -72,7 +72,7 @@ function find_ATP_at_ATPase_range(
         min_ATPase = 0.001,
         max_ATPase = 1.0
 )
-    tspan = (0.0, 1e3)
+    tspan = (0.0, 1e8)
     pathway_Vmax = 2 * params.HK1_Vmax * params.HK1_Conc
     ATPases = 10 .^ range(log10(min_ATPase), log10(max_ATPase), n_Vmax_ATPase_values) .*
               pathway_Vmax
@@ -84,14 +84,14 @@ function find_ATP_at_ATPase_range(
     ensemble_prob = EnsembleProblem(prob, prob_func = prob_func)
     sim = solve(
         ensemble_prob,
-        Rodas5P(),
-        EnsembleThreads(),
+        RadauIIA5(),
+        EnsembleSerial(),
         trajectories = n_Vmax_ATPase_values,
-        abstol = 1e-12,
-        reltol = 1e-5,
+        abstol = 1e-15,
+        reltol = 1e-8,
         save_everystep = false,
         save_start = false,
-        # maxiters = 1e3
+        maxiters = 1e3
     )
     ATP_conc = [sol.u[end].ATP for sol in sim if sol.retcode == ReturnCode.Success]
     Glucose_conc = [sol.u[end].Glucose for sol in sim if sol.retcode == ReturnCode.Success]
@@ -176,8 +176,8 @@ set_theme!(Theme(fontsize = 6,
     Axis = (
         xticksize = 1,
         yticksize = 1,
-        # xticklabelsize = 6,
-        # yticklabelsize = 6,
+        xticklabelsize = 8,
+        yticklabelsize = 8,
         yticklabelpad = 1,
         ylabelpadding = 3
     )))
@@ -206,7 +206,10 @@ ax_ATPase_range = Axis(
     limits = ((0.001, 1.0), (1e-3, nothing)),
     xlabel = "ATPase, % of pathway Vmax",
     ylabel = "[Metabolite],M",
-    title = "Metabolite concentration changes with model without allostery at constant [Phosphate]=1mM",
+    title = "Metabolite concentration changes with model\nwithout allostery at constant [Phosphate]=1mM",
+    titlesize = 10,
+    xlabelsize = 12,
+    ylabelsize = 12,
     xscale = log10,
     yscale = log10,
     xticks = ([0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 0.9],
@@ -246,19 +249,19 @@ lines!(
 lines!(
     ax_ATPase_range,
     Const_Pi_No_Reg_Model_Simulation_Data.ATPase_Vmax,
-    Const_Pi_No_Reg_Model_Simulation_Data.GAP_conc,
+    abs.(Const_Pi_No_Reg_Model_Simulation_Data.GAP_conc),
     label = "GAP"
 )
 lines!(
     ax_ATPase_range,
     Const_Pi_No_Reg_Model_Simulation_Data.ATPase_Vmax,
-    Const_Pi_No_Reg_Model_Simulation_Data.DHAP_conc,
+    abs.(Const_Pi_No_Reg_Model_Simulation_Data.DHAP_conc),
     label = "DHAP"
 )
 lines!(
     ax_ATPase_range,
     Const_Pi_No_Reg_Model_Simulation_Data.ATPase_Vmax,
-    Const_Pi_No_Reg_Model_Simulation_Data.BPG_conc,
+    abs.(Const_Pi_No_Reg_Model_Simulation_Data.BPG_conc),
     label = "BPG",
     color = after_gapdh_color,
     linestyle = after_gapdh_style
@@ -266,7 +269,7 @@ lines!(
 lines!(
     ax_ATPase_range,
     Const_Pi_No_Reg_Model_Simulation_Data.ATPase_Vmax,
-    Const_Pi_No_Reg_Model_Simulation_Data.ThreePG_conc,
+    abs.(Const_Pi_No_Reg_Model_Simulation_Data.ThreePG_conc),
     label = "3PG",
     color = after_gapdh_color,
     linestyle = after_gapdh_style
@@ -274,7 +277,7 @@ lines!(
 lines!(
     ax_ATPase_range,
     Const_Pi_No_Reg_Model_Simulation_Data.ATPase_Vmax,
-    Const_Pi_No_Reg_Model_Simulation_Data.TwoPG_conc,
+    abs.(Const_Pi_No_Reg_Model_Simulation_Data.TwoPG_conc),
     label = "2PG",
     color = after_gapdh_color,
     linestyle = after_gapdh_style
@@ -282,7 +285,7 @@ lines!(
 lines!(
     ax_ATPase_range,
     Const_Pi_No_Reg_Model_Simulation_Data.ATPase_Vmax,
-    Const_Pi_No_Reg_Model_Simulation_Data.PEP_conc,
+    abs.(Const_Pi_No_Reg_Model_Simulation_Data.PEP_conc),
     label = "PEP",
     color = after_gapdh_color,
     linestyle = after_gapdh_style
@@ -311,7 +314,8 @@ Legend(
     rowgap = 1,
     # framevisible = false,
     # padding = (-5, -5, 0, -8),
-    patchsize = (20, 5)
+    patchsize = (20, 5),
+    labelsize = 8
 )
 
 colgap!(fig.layout, 10)

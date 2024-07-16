@@ -8,7 +8,7 @@ using SwarmMakie
 # Precalculate output of complete model
 
 tspan = (0.0, 240.0 / 4)
-Initial_ATPase_Vmax_frac = 0.06
+Initial_ATPase_Vmax_frac = 0.05
 High_ATPase_Vmax_frac = Initial_ATPase_Vmax_frac * 2
 Low_ATPase_Vmax_frac = Initial_ATPase_Vmax_frac / 2
 ATPase_change_time1 = 60 / 4

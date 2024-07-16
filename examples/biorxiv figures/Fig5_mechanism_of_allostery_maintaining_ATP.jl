@@ -6,7 +6,7 @@ using FileIO
 
 ##
 # Precalculate output of complete model and model without regulation
-# This code takes ~10 minutes to run on an 8 core machine
+# This code takes ~3 minutes to run on an 8 core machine
 
 function glycolysis_ODEs_fixed_Pi(ds, s, params, t)
     ds.Glucose_media = 0.0
@@ -134,76 +134,11 @@ function glycolysis_ODEs_Vmax_HK_PFK_eq_ATPase(ds, s, params, t)
     ds.Phenylalanine = 0.0
 end
 
-function glycolysis_ODEs_fixed_BPG_NAD_NADH(ds, s, params, t)
-    ds.Glucose_media = 0.0
-    ds.Glucose = Glycolysis.rate_GLUT(s, params) -
-                 Glycolysis.rate_HK1(s, params)
-    ds.G6P = Glycolysis.rate_HK1(s, params) -
-             Glycolysis.rate_GPI(s, params)
-    ds.F6P = (
-        Glycolysis.rate_GPI(s, params) -
-        Glycolysis.rate_PFKP(s, params)
-    )
-    ds.F16BP = (
-        Glycolysis.rate_PFKP(s, params) -
-        Glycolysis.rate_ALDO(s, params)
-    )
-    ds.GAP = (
-        Glycolysis.rate_ALDO(s, params) + Glycolysis.rate_TPI(s, params) -
-        Glycolysis.rate_GAPDH(s, params)
-    )
-    ds.DHAP = Glycolysis.rate_ALDO(s, params) - Glycolysis.rate_TPI(s, params)
-    ds.BPG = 0.0
-    # ds.BPG =
-    #     Glycolysis.rate_GAPDH(s, params) -
-    #     Glycolysis.rate_PGK(s, params)
-    ds.ThreePG = Glycolysis.rate_PGK(s, params) -
-                 Glycolysis.rate_PGM(s, params)
-    ds.TwoPG = Glycolysis.rate_PGM(s, params) - Glycolysis.rate_ENO(s, params)
-    ds.PEP = Glycolysis.rate_ENO(s, params) -
-             Glycolysis.rate_PKM2(s, params)
-    ds.Pyruvate = Glycolysis.rate_PKM2(s, params) -
-                  Glycolysis.rate_LDH(s, params)
-    ds.Lactate = Glycolysis.rate_LDH(s, params) -
-                 Glycolysis.rate_MCT(s, params)
-    ds.Lactate_media = 0.0
-    ds.ATP = (
-        -Glycolysis.rate_HK1(s, params) -
-        Glycolysis.rate_PFKP(s, params) +
-        Glycolysis.rate_PGK(s, params) +
-        Glycolysis.rate_PKM2(s, params) -
-        Glycolysis.rate_ATPase(s, params) +
-        Glycolysis.rate_AK(s, params)
-    )
-    ds.ADP = (
-        Glycolysis.rate_HK1(s, params) +
-        Glycolysis.rate_PFKP(s, params) -
-        Glycolysis.rate_PGK(s, params) -
-        Glycolysis.rate_PKM2(s, params) +
-        Glycolysis.rate_ATPase(s, params) -
-        2 * Glycolysis.rate_AK(s, params)
-    )
-    ds.AMP = Glycolysis.rate_AK(s, params)
-    ds.Phosphate = Glycolysis.rate_ATPase(s, params) -
-                   Glycolysis.rate_GAPDH(s, params)
-    ds.NAD = 0.0
-    # ds.NAD =
-    #     Glycolysis.rate_LDH(s, params) -
-    #     Glycolysis.rate_GAPDH(s, params)
-    ds.NADH = 0.0
-    # ds.NADH =
-    #     Glycolysis.rate_GAPDH(s, params) -
-    #     Glycolysis.rate_LDH(s, params)
-    ds.F26BP = 0.0
-    ds.Citrate = 0.0
-    ds.Phenylalanine = 0.0
-end
-
 function find_ATP_at_ATPase_range(
         ODE_func,
         params,
         init_conc;
-        n_Vmax_ATPase_values = 200,
+        n_Vmax_ATPase_values = 1000,
         min_ATPase = 0.001,
         max_ATPase = 1.0
 )
@@ -219,14 +154,14 @@ function find_ATP_at_ATPase_range(
     ensemble_prob = EnsembleProblem(prob, prob_func = prob_func)
     sim = solve(
         ensemble_prob,
-        # Rodas5P(),
         RadauIIA5(),
-        EnsembleThreads(),
+        EnsembleSerial(),
         trajectories = length(ATPases),
         abstol = 1e-15,
         reltol = 1e-8,
         save_everystep = false,
-        save_start = false
+        save_start = false,
+        maxiters = 1e3
     )
     ATP_conc = [sol.u[end].ATP for sol in sim if sol.retcode == ReturnCode.Success]
     ATPase_Vmax = [ATPases[i]
@@ -657,4 +592,4 @@ label_e = fig[2, 5, TopLeft()] = Label(
 fig
 
 # uncomment the line below to save the plot
-# save("Results/$(Dates.format(now(),"mmddyy"))_Fig5_mechanism_of_ATP_maintenence_by_allost.png", fig, px_per_unit = 4)
+save("Results/$(Dates.format(now(),"mmddyy"))_Fig5_mechanism_of_ATP_maintenence_by_allost.png", fig, px_per_unit = 4)

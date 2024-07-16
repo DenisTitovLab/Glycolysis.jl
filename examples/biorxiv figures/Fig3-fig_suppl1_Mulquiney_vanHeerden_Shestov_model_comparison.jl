@@ -52,7 +52,7 @@ else
 end
 
 # Precalculate output of Mulquiney 1999 model
-include("for_FigS2_Mulquiney1999Model.jl")
+include("for_Fig3-fig_suppl1_Mulquiney1999Model.jl")
 # mulquiney_glycolysis_init_conc = deepcopy(glycolysis_init_conc)
 function mulquiney_find_ATP_at_ATPase_range(mulquiney_glycolysis_params,
         mulquiney_glycolysis_init_conc;
@@ -112,7 +112,7 @@ no_reg_mulquiney_Model_Simulation_Data = mulquiney_find_ATP_at_ATPase_range(no_r
     mulquiney_glycolysis_init_conc)
 
 # Precalculate output of vanHeerden 2014 model
-include("for_FigS2_vanHeerden2014Model.jl")
+include("for_Fig3-fig_suppl1_vanHeerden2014Model.jl")
 # van_heerden_glycolysis_init_conc = deepcopy(glycolysis_init_conc)
 function van_heerden_find_ATP_at_ATPase_range(van_heerden_glycolysis_params,
         van_heerden_glycolysis_init_conc;
@@ -170,7 +170,7 @@ no_reg_van_heerden_Model_Simulation_Data = van_heerden_find_ATP_at_ATPase_range(
     van_heerden_glycolysis_init_conc)
 
 # Precalculate output of Shestov 2014 model
-include("for_FigS2_Shestov2014Model.jl")
+include("for_Fig3-fig_suppl1_Shestov2014Model.jl")
 # shestov_glycolysis_init_conc = deepcopy(glycolysis_init_conc)
 shestov_ATPase_Vmax_shift = 10000
 function shestov_find_ATP_at_ATPase_range(shestov_glycolysis_params,

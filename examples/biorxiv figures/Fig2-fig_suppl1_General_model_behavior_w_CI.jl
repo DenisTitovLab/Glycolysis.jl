@@ -15,7 +15,7 @@ addprocs(8; exeflags = "--project")
 using Distributions, LabelledArrays, Statistics, StatsBase, DataFrames, CSV
 using DataFrames, CSV, Dates
 
-@everywhere Initial_ATPase_Vmax_frac = 0.06
+@everywhere Initial_ATPase_Vmax_frac = 0.05
 @everywhere High_ATPase_Vmax_frac = Initial_ATPase_Vmax_frac * 2
 @everywhere Low_ATPase_Vmax_frac = Initial_ATPase_Vmax_frac / 2
 @everywhere ATPase_change_time1 = 60 / 4
