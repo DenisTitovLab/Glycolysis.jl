@@ -248,8 +248,8 @@ ax_Sens_Ind = Axis(
         1:length(unique(barplot_df.Parameters)),
         replace.(
             unique(barplot_df.Parameters),
-            "HK1 PFKP Km Vmax" => "HK1 & PFKP\nKm & Vmax",
-            "HK1 PFKP" => "HK1 & PFKP",
+            "HK1 PFKP Km Vmax" => "HK1 & PFKP\nnon-allosteric",
+            "HK1 PFKP reg" => "HK1 & PFKP\nallosteric",
             "Km Vmax" => "Km & Vmax",
         ),
     ),
@@ -264,7 +264,7 @@ barplot!(
     dodge = barplot_df.dodge_index,
     color = colors[barplot_df.dodge_index],
 )
-vspan!(ax_Sens_Ind, 1.5, 2.5; ymin = 0.0, ymax = 0.35, color = (:red, 0.1))
+vspan!(ax_Sens_Ind, 1.5, 2.5; ymin = 0.0, ymax = 0.8, color = (:red, 0.1))
 
 
 labels = ["S1", "ST"]
@@ -348,8 +348,8 @@ ax_Sens_Ind = Axis(
         1:length(unique(barplot_df.Parameters)),
         replace.(
             unique(barplot_df.Parameters),
-            "HK1 PFKP Km Vmax" => "HK1 & PFKP\nKm & Vmax",
-            "HK1 PFKP" => "HK1 & PFKP",
+            "HK1 PFKP Km Vmax" => "HK1 & PFKP\nnon-allosteric",
+            "HK1 PFKP reg" => "HK1 & PFKP\nallosteric",
             "Km Vmax" => "Km & Vmax",
         ),
     ),
@@ -363,7 +363,7 @@ barplot!(
     dodge = barplot_df.dodge_index,
     color = colors[barplot_df.dodge_index],
 )
-vspan!(ax_Sens_Ind, 1.5, 2.5; ymin = 0.0, ymax = 0.35, color = (:red, 0.1))
+vspan!(ax_Sens_Ind, 1.5, 2.5; ymin = 0.0, ymax = 0.8, color = (:red, 0.1))
 
 
 labels = ["S1", "ST"]
@@ -447,8 +447,8 @@ ax_Sens_Ind = Axis(
         1:length(unique(barplot_df.Parameters)),
         replace.(
             unique(barplot_df.Parameters),
-            "HK1 PFKP Km Vmax" => "HK1 & PFKP\nKm & Vmax",
-            "HK1 PFKP" => "HK1 & PFKP",
+            "HK1 PFKP Km Vmax" => "HK1 & PFKP\nnon-allosteric",
+            "HK1 PFKP reg" => "HK1 & PFKP\nallosteric",
             "Km Vmax" => "Km & Vmax",
         ),
     ),
@@ -462,7 +462,7 @@ barplot!(
     dodge = barplot_df.dodge_index,
     color = colors[barplot_df.dodge_index],
 )
-vspan!(ax_Sens_Ind, 1.5, 2.5; ymin = 0.0, ymax = 0.35, color = (:red, 0.1))
+vspan!(ax_Sens_Ind, 1.5, 2.5; ymin = 0.0, ymax = 0.8, color = (:red, 0.1))
 
 
 labels = ["S1", "ST"]
