@@ -135,12 +135,12 @@ function glycolysis_ODEs_Vmax_HK_PFK_eq_ATPase(ds, s, params, t)
 end
 
 function find_ATP_at_ATPase_range(
-        ODE_func,
-        params,
-        init_conc;
-        n_Vmax_ATPase_values = 1000,
-        min_ATPase = 0.001,
-        max_ATPase = 1.0
+    ODE_func,
+    params,
+    init_conc;
+    n_Vmax_ATPase_values=1000,
+    min_ATPase=0.001,
+    max_ATPase=1.0
 )
     tspan = (0.0, 1e8)
     pathway_Vmax = 2 * params.HK1_Vmax * params.HK1_Conc
@@ -151,27 +151,27 @@ function find_ATP_at_ATPase_range(
         prob.p.ATPase_Vmax = ATPases[i]
         prob
     end
-    ensemble_prob = EnsembleProblem(prob, prob_func = prob_func)
+    ensemble_prob = EnsembleProblem(prob, prob_func=prob_func)
     sim = solve(
         ensemble_prob,
-        RadauIIA5(),
+        RadauIIA9(),
         EnsembleSerial(),
-        trajectories = length(ATPases),
-        abstol = 1e-15,
-        reltol = 1e-8,
-        save_everystep = false,
-        save_start = false,
-        maxiters = 1e3
+        trajectories=length(ATPases),
+        abstol=1e-15,
+        reltol=1e-8,
+        save_everystep=false,
+        save_start=false,
+        maxiters=1e3
     )
     ATP_conc = [sol.u[end].ATP for sol in sim if sol.retcode == ReturnCode.Success]
     ATPase_Vmax = [ATPases[i]
                    for (i, sol) in enumerate(sim) if sol.retcode == ReturnCode.Success] ./
                   (2 * params.HK1_Vmax * params.HK1_Conc)
     ATP_energy = [-log(Glycolysis.conc_to_disequilibrium_ratios(
-                      sol.u[end], params).Q_Keq_ATPase)
+        sol.u[end], params).Q_Keq_ATPase)
                   for
                   sol in sim if sol.retcode == ReturnCode.Success]
-    return (ATP_conc = ATP_conc, ATPase_Vmax = ATPase_Vmax, ATP_energy = ATP_energy)
+    return (ATP_conc=ATP_conc, ATPase_Vmax=ATPase_Vmax, ATP_energy=ATP_energy)
 end
 
 glycolysis_init_conc_copy = deepcopy(glycolysis_init_conc)
@@ -220,21 +220,25 @@ glycolysis_init_conc_copy = deepcopy(glycolysis_init_conc)
 Vmax_HK_PFK_eq_ATPase_No_Reg_Model_Simulation_Data = find_ATP_at_ATPase_range(
     glycolysis_ODEs_Vmax_HK_PFK_eq_ATPase, no_reg_params, glycolysis_init_conc_copy)
 
+##
 # Precalculate dynamic change in [Metabolite] after allostery removal
+# calculate results without const Pi
 glycolysis_params_copy = deepcopy(glycolysis_params)
-glycolysis_params_copy_affect2 = deepcopy(glycolysis_params)
+no_reg_params = deepcopy(glycolysis_params)
+no_reg_params.HK1_K_a_G6P_cat = Inf
+no_reg_params.HK1_K_i_G6P_reg = Inf
+no_reg_params.HK1_K_a_Pi = Inf
+no_reg_params.PFKP_L = 0.0
+no_reg_params.GAPDH_L = 0.0
+no_reg_params.PKM2_L = 0.0
+no_reg_params.ATPase_Km_ATP = 1e-9
 
-tspan = (0.0, 60.0)
-callback_time1 = 30
-callback_time2 = 120
-Initial_ATPase_Vmax_frac = 0.03
+tspan = (0.0, 120.0)
+callback_time1 = 60
+Initial_ATPase_Vmax_frac = 0.20
 glycolysis_params_copy.ATPase_Vmax = Initial_ATPase_Vmax_frac * 2 *
                                      glycolysis_params_copy.HK1_Conc *
                                      glycolysis_params_copy.HK1_Vmax
-glycolysis_params_copy_affect2.ATPase_Vmax = Initial_ATPase_Vmax_frac *
-                                             2 *
-                                             glycolysis_params_copy_affect2.HK1_Conc *
-                                             glycolysis_params_copy_affect2.HK1_Vmax
 no_reg_params.ATPase_Vmax = Initial_ATPase_Vmax_frac * 2 * no_reg_params.HK1_Conc *
                             no_reg_params.HK1_Vmax
 function affect1!(integrator)
@@ -246,43 +250,73 @@ function affect1!(integrator)
     # integrator.p.PKM2_L = 0.0
     # integrator.p.ATPase_Km_ATP = 1e-9
 end
-function affect2!(integrator)
-    integrator.p .= glycolysis_params_copy_affect2
-end
 
 PresetTime_cb1 = PresetTimeCallback(callback_time1, affect1!)
-PresetTime_cb2 = PresetTimeCallback(callback_time2, affect2!)
-cb_set = CallbackSet(PresetTime_cb1, PresetTime_cb2)
-
 init_cond_prob = ODEProblem(
     glycolysis_ODEs, glycolysis_init_conc, (0, 1e8), glycolysis_params_copy)
 init_cond_sol = solve(
-    init_cond_prob, Rodas5P(), abstol = 1e-15, reltol = 1e-8, save_everystep = false)
+    init_cond_prob, Rodas5P(), abstol=1e-15, reltol=1e-8, save_everystep=false)
 new_init_cond = init_cond_sol.u[end]
 prob = ODEProblem(glycolysis_ODEs, new_init_cond, tspan,
-    glycolysis_params_copy, callback = PresetTime_cb1)
+    glycolysis_params_copy, callback=PresetTime_cb1)
 sol = solve(
     prob,
     Rodas5P(),
-    abstol = 1e-15,
-    reltol = 1e-8,
-    saveat = [k for k in tspan[1]:((tspan[2] - tspan[1]) / 10_000):tspan[2]]
+    abstol=1e-15,
+    reltol=1e-8,
+    saveat=[k for k in tspan[1]:((tspan[2]-tspan[1])/10_000):tspan[2]]
+)
+
+# calculate results with const Pi
+glycolysis_params_copy = deepcopy(glycolysis_params)
+no_reg_params = deepcopy(glycolysis_params)
+no_reg_params.HK1_K_a_G6P_cat = Inf
+no_reg_params.HK1_K_i_G6P_reg = Inf
+no_reg_params.HK1_K_a_Pi = Inf
+no_reg_params.PFKP_L = 0.0
+no_reg_params.GAPDH_L = 0.0
+no_reg_params.PKM2_L = 0.0
+no_reg_params.ATPase_Km_ATP = 1e-9
+
+glycolysis_params_copy.ATPase_Vmax = Initial_ATPase_Vmax_frac * 2 *
+                                     glycolysis_params_copy.HK1_Conc *
+                                     glycolysis_params_copy.HK1_Vmax
+no_reg_params.ATPase_Vmax = Initial_ATPase_Vmax_frac * 2 * no_reg_params.HK1_Conc *
+                            no_reg_params.HK1_Vmax
+function affect1!(integrator)
+    integrator.p .= no_reg_params
+end
+PresetTime_cb1 = PresetTimeCallback(callback_time1, affect1!)
+
+init_cond_const_pi_prob = ODEProblem(
+    glycolysis_ODEs_fixed_Pi, glycolysis_init_conc, (0, 1e8), glycolysis_params_copy)
+init_cond_const_pi_sol = solve(
+    init_cond_const_pi_prob, RadauIIA9(), abstol=1e-15, reltol=1e-8, save_everystep=false)
+new_init_const_pi_cond = init_cond_const_pi_sol.u[end]
+prob_const_pi = ODEProblem(glycolysis_ODEs_fixed_Pi, new_init_const_pi_cond, tspan,
+    glycolysis_params_copy, callback=PresetTime_cb1)
+sol_const_pi = solve(
+    prob_const_pi,
+    RadauIIA9(),
+    abstol=1e-15,
+    reltol=1e-8,
+    saveat=[k for k in tspan[1]:((tspan[2]-tspan[1])/10_000):tspan[2]]
 )
 
 ##
 # Plot the results
 size_inches = (6.5, 5)
 size_pt = 72 .* size_inches
-set_theme!(Theme(fontsize = 6,
-    Axis = (
-        xticksize = 1,
-        yticksize = 1,
+set_theme!(Theme(fontsize=6,
+    Axis=(
+        xticksize=1,
+        yticksize=1,
         # xticklabelsize = 6,
         # yticklabelsize = 6,
-        yticklabelpad = 1,
-        ylabelpadding = 3
+        yticklabelpad=1,
+        ylabelpadding=3
     )))
-fig = Figure(size = size_pt)
+fig = Figure(size=size_pt)
 
 full_color = Makie.wong_colors()[1]
 no_reg_color = Makie.wong_colors()[6]
@@ -303,8 +337,8 @@ no_allo_line_models_style = [0.5, 1, 1.5, 2] .* 2
 
 pi_trap = load("110623_Glycolysis_schematic_pi_trap.png")
 
-ax_pi_trap, im = image(fig[1, 1:3], rotr90(pi_trap), axis = (aspect = DataAspect(),))
-ax_pi_trap.alignmode = Mixed(top = -20, bottom = -20, left = -25, right = -15)
+ax_pi_trap, im = image(fig[1, 1:2], rotr90(pi_trap), axis=(aspect=DataAspect(),))
+# ax_pi_trap.alignmode = Mixed(top=-20, bottom=-20, left=-25, right=-15)
 # ax_pi_trap.width = 80
 ax_pi_trap.tellwidth = false
 hidedecorations!(ax_pi_trap)
@@ -312,15 +346,15 @@ hidespines!(ax_pi_trap)
 
 # Plot changing in Pi, intermediate before GAPDH and after GAPDH
 
-# Plot metabolite with switch off/on of allostery
+# Plot metabolite with switch off/on of allostery whout Pi uptake
 ax_allost_on_off = Axis(
-    fig[1, 4:6],
-    # limits=((0.001, 1.0), (2e-9, 2e-3)),
-    xlabel = "Time, min",
+    fig[1, 3:4],
+    limits=((0, 120), nothing),
+    xlabel="Time, min",
     # ylabel = "[Metabolite],M",
-    ylabel = "[Metabolite], normalized to Time=0",
-    title = "Metabolite concentration changes\nin response to removal of HK and PFK allostery",
-    yscale = log10    # yticks = ([1e-8, 1e-6, 1e-4, 1e-2], ["0.01µM", "1µM", "0.1mM", "10mM"]),    # yticks = ([0.001, 0.01, 0.1, 1, 10, 100, 1000]),
+    ylabel="[Metabolite], normalized to Time=0",
+    title="Metabolite concentration changes\nin response to removal of HK and PFK allostery",
+    yscale=log10    # yticks = ([1e-8, 1e-6, 1e-4, 1e-2], ["0.01µM", "1µM", "0.1mM", "10mM"]),    # yticks = ([0.001, 0.01, 0.1, 1, 10, 100, 1000]),
 )
 allost_on_off_lines = []
 ATP_color = :Red
@@ -357,9 +391,9 @@ for metabolite in [
         sol.t,
         # sol[metabolite, :] ./ sol[metabolite, 1],
         [sol.u[i][metabolite] for i in 1:length(sol.u)] ./ sol.u[1][metabolite],
-        label = String(metabolite),
-        color = color,
-        linestyle = linestyle
+        label=String(metabolite),
+        color=color,
+        linestyle=linestyle
     )
     push!(allost_on_off_lines, allost_on_off_line)
 end
@@ -367,56 +401,124 @@ axislegend(
     ax_allost_on_off,
     [
         allost_on_off_lines[4],
-        allost_on_off_lines[end - 3],
-        allost_on_off_lines[end - 2],
-        allost_on_off_lines[end - 1],
+        allost_on_off_lines[end-3],
+        allost_on_off_lines[end-2],
+        allost_on_off_lines[end-1],
         allost_on_off_lines[end]],
-    ["Metabolites before GAPDH", "Metabolites after GAPDH", "ATP", "ADP", "Phosphate"],
-    position = :lb,
+    ["Metabolites\nbefore GAPDH", "Metabolites\nafter GAPDH", "ATP", "ADP", "Phosphate"],
+    position=:lt,
     # position = (1.075, 1.05),
-    rowgap = 1,
-    framevisible = false,
-    padding = (-2, -5, 0, -4),
-    patchsize = (10, 5)
+    rowgap=1,
+    framevisible=false,
+    padding=(-2, -5, 0, -4),
+    patchsize=(10, 5)
+)
+
+# Plot metabolite with switch off/on of allostery with Pi uptake
+ax_allost_on_off_const_pi = Axis(
+    fig[1, 5:6],
+    limits=((0, 120), nothing),
+    xlabel="Time, min",
+    # ylabel = "[Metabolite],M",
+    ylabel="[Metabolite], normalized to Time=0",
+    title="Metabolite concentration changes\nin response to removal of HK and PFK allostery",
+    # yscale=log10    # yticks = ([1e-8, 1e-6, 1e-4, 1e-2], ["0.01µM", "1µM", "0.1mM", "10mM"]),    # yticks = ([0.001, 0.01, 0.1, 1, 10, 100, 1000]),
+)
+allost_on_off_const_pi_lines = []
+ATP_color = :Red
+ATP_style = nothing
+ADP_color = :Red
+ADP_style = :dot
+Phosphate_color = :Red
+Phosphate_style = :dash
+Upper_color = Makie.wong_colors()[1]
+Upper_style = nothing
+Lower_color = Makie.wong_colors()[3]
+Lower_style = nothing
+for metabolite in [
+    :G6P, :F6P, :F16BP, :GAP, :DHAP, :BPG, :TwoPG, :ThreePG, :PEP, :ATP, :ADP, :Phosphate]
+    if metabolite ∈ [:G6P, :F6P, :F16BP, :GAP, :DHAP]
+        color = Upper_color
+        linestyle = Upper_style
+    elseif metabolite ∈ [:BPG, :TwoPG, :ThreePG, :PEP]
+        color = Lower_color
+        linestyle = Lower_style
+    elseif metabolite ∈ [:ATP]
+        color = ATP_color
+        linestyle = ATP_style
+    elseif metabolite ∈ [:ADP]
+        color = ADP_color
+        linestyle = ADP_style
+    elseif metabolite ∈ [:Phosphate]
+        color = Makie.wong_colors()[5]
+        color = Phosphate_color
+        linestyle = Phosphate_style
+    end
+    allost_on_off_const_pi_line = lines!(
+        ax_allost_on_off_const_pi,
+        sol_const_pi.t,
+        # sol[metabolite, :] ./ sol[metabolite, 1],
+        [sol_const_pi.u[i][metabolite] for i in 1:length(sol_const_pi.u)], # ./ sol_const_pi.u[1][metabolite],
+        label=String(metabolite),
+        color=color,
+        linestyle=linestyle
+    )
+    push!(allost_on_off_const_pi_lines, allost_on_off_const_pi_line)
+end
+axislegend(
+    ax_allost_on_off_const_pi,
+    [
+        allost_on_off_const_pi_lines[4],
+        allost_on_off_const_pi_lines[end-3],
+        allost_on_off_const_pi_lines[end-2],
+        allost_on_off_const_pi_lines[end-1],
+        allost_on_off_const_pi_lines[end]],
+    ["Metabolites\nbefore GAPDH", "Metabolites\nafter GAPDH", "ATP", "ADP", "Phosphate"],
+    position=:lt,
+    # position = (1.075, 1.05),
+    rowgap=1,
+    framevisible=false,
+    padding=(-2, -5, 0, -4),
+    patchsize=(10, 5)
 )
 
 adenine_pool_size = glycolysis_init_conc.ATP + glycolysis_init_conc.ADP + glycolysis_init_conc.AMP
 # Plot [ATP] maintenance with constant Phosphate
 ax_ATPase_range = Axis(
     fig[2, 1:2],
-    limits = ((0.001, 1.0), (-0.2e-3, 1.75 * adenine_pool_size)),
-    xlabel = "ATPase, % of pathway Vmax",
-    ylabel = "[ATP],mM",
-    title = "Metabolite concentration changes\nwith constant [Phosphate]",
-    xscale = log10,
+    limits=((0.001, 1.0), (-0.2e-3, 1.75 * adenine_pool_size)),
+    xlabel="ATPase, % of pathway Vmax",
+    ylabel="[ATP],mM",
+    title="Metabolite concentration changes\nwith constant [Phosphate]",
+    xscale=log10,
     # yscale = log10,
-    xticks = ([0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 0.9],
+    xticks=([0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 0.9],
         ["0.1%", "0.3%", "1%", "3%", "10%", "30%", "90%"]),
-    ytickformat = ys -> ["$(Int(round(y*1000, sigdigits=2)))" for y in ys]
+    ytickformat=ys -> ["$(Int(round(y*1000, sigdigits=2)))" for y in ys]
 )
 lines!(
     ax_ATPase_range,
     Complete_Model_Simulation_Data.ATPase_Vmax,
     Complete_Model_Simulation_Data.ATP_conc,
-    color = full_color,
-    linestyle = full_linestyle,
-    label = "Full model"
+    color=full_color,
+    linestyle=full_linestyle,
+    label="Full model"
 )
 lines!(
     ax_ATPase_range,
     No_Reg_Model_Simulation_Data.ATPase_Vmax,
     No_Reg_Model_Simulation_Data.ATP_conc,
-    color = no_reg_color,
-    linestyle = no_reg_linestyle,
-    label = "Model w/o allost."
+    color=no_reg_color,
+    linestyle=no_reg_linestyle,
+    label="Model w/o allost."
 )
 lines!(
     ax_ATPase_range,
     Const_Pi_No_Reg_Model_Simulation_Data.ATPase_Vmax,
     Const_Pi_No_Reg_Model_Simulation_Data.ATP_conc,
-    color = condition_no_reg_color,
-    linestyle = condition_no_reg_linestyle,
-    label = "Model w/o allost.\n[Phosphate]=1mM"
+    color=condition_no_reg_color,
+    linestyle=condition_no_reg_linestyle,
+    label="Model w/o allost.\n[Phosphate]=1mM"
 )
 lines!(
     ax_ATPase_range,
@@ -424,64 +526,64 @@ lines!(
     repeat(
         [glycolysis_init_conc.ATP + glycolysis_init_conc.ADP + glycolysis_init_conc.AMP],
         2),
-    color = adenine_pool_color,
-    linestyle = adenine_pool_linestyle
+    color=adenine_pool_color,
+    linestyle=adenine_pool_linestyle
 )
 text!(
     ax_ATPase_range,
     0.0033,
     1.02 * (glycolysis_init_conc.ATP + glycolysis_init_conc.ADP + glycolysis_init_conc.AMP),
-    text = "Adenine pool size",
-    align = (:left, :bottom),
-    color = adenine_pool_color
+    text="Adenine pool size",
+    align=(:left, :bottom),
+    color=adenine_pool_color
 )
 axislegend(
     ax_ATPase_range,
-    position = :lt,
+    position=:lt,
     # position = (1.075, 1.05),
-    rowgap = 1,
-    framevisible = false,
-    padding = (-2, -5, 0, -4),
-    patchsize = (10, 5)
+    rowgap=1,
+    framevisible=false,
+    padding=(-2, -5, 0, -4),
+    patchsize=(10, 5)
 )
 
 # Plot [ATP] maintenance with different Keq HK PFK GAPDH PGK
 ax_ATPase_range = Axis(
     fig[2, 3:4],
-    limits = ((0.001, 1.0), (-0.2e-3, 1.75 * adenine_pool_size)),
+    limits=((0.001, 1.0), (-0.2e-3, 1.75 * adenine_pool_size)),
     # limits = ((0.0001, 1.0), (-0.2e-3, 14e-3)),
-    xlabel = "ATPase, % of pathway Vmax",
-    ylabel = "[ATP],mM",
-    title = "Maintaining ATP concentration with lower\nKeq for HK1, PFKP, GAPDH, and PGK reactions",
-    xscale = log10,
+    xlabel="ATPase, % of pathway Vmax",
+    ylabel="[ATP],mM",
+    title="Maintaining ATP concentration with lower\nKeq for HK1, PFKP, GAPDH, and PGK reactions",
+    xscale=log10,
     # yscale = log10,
-    xticks = ([0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 0.9],
+    xticks=([0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 0.9],
         ["0.1%", "0.3%", "1%", "3%", "10%", "30%", "90%"]),
-    ytickformat = ys -> ["$(Int(round(y*1000, sigdigits=2)))" for y in ys]
+    ytickformat=ys -> ["$(Int(round(y*1000, sigdigits=2)))" for y in ys]
 )
 lines!(
     ax_ATPase_range,
     Complete_Model_Simulation_Data.ATPase_Vmax,
     Complete_Model_Simulation_Data.ATP_conc,
-    color = full_color,
-    linestyle = full_linestyle,
-    label = "Full model"
+    color=full_color,
+    linestyle=full_linestyle,
+    label="Full model"
 )
 lines!(
     ax_ATPase_range,
     No_Reg_Model_Simulation_Data.ATPase_Vmax,
     No_Reg_Model_Simulation_Data.ATP_conc,
-    color = no_reg_color,
-    linestyle = no_reg_linestyle,
-    label = "Model w/o allost."
+    color=no_reg_color,
+    linestyle=no_reg_linestyle,
+    label="Model w/o allost."
 )
 lines!(
     ax_ATPase_range,
     Keq_HK_PFK_GAPDH_PGK_No_Reg_Model_Simulation_Data.ATPase_Vmax,
     Keq_HK_PFK_GAPDH_PGK_No_Reg_Model_Simulation_Data.ATP_conc,
-    color = condition_no_reg_color,
-    linestyle = condition_no_reg_linestyle,
-    label = "Model w/o allost.\nKeq HK1=Keq PFKP=0.05\nKeq GAPDH=0.5, Keq PGK=5"
+    color=condition_no_reg_color,
+    linestyle=condition_no_reg_linestyle,
+    label="Model w/o allost.\nKeq HK1=Keq PFKP=0.05\nKeq GAPDH=0.5, Keq PGK=5"
 )
 lines!(
     ax_ATPase_range,
@@ -489,64 +591,64 @@ lines!(
     repeat(
         [glycolysis_init_conc.ATP + glycolysis_init_conc.ADP + glycolysis_init_conc.AMP],
         2),
-    color = adenine_pool_color,
-    linestyle = adenine_pool_linestyle
+    color=adenine_pool_color,
+    linestyle=adenine_pool_linestyle
 )
 text!(
     ax_ATPase_range,
     0.0033,
     1.02 * (glycolysis_init_conc.ATP + glycolysis_init_conc.ADP + glycolysis_init_conc.AMP),
-    text = "Adenine pool size",
-    align = (:left, :bottom),
-    color = adenine_pool_color
+    text="Adenine pool size",
+    align=(:left, :bottom),
+    color=adenine_pool_color
 )
 axislegend(
     ax_ATPase_range,
-    position = :lt,
+    position=:lt,
     # position = (1.075, 1.05),
-    rowgap = 1,
-    framevisible = false,
-    padding = (-2, -5, 0, -4),
-    patchsize = (10, 5)
+    rowgap=1,
+    framevisible=false,
+    padding=(-2, -5, 0, -4),
+    patchsize=(10, 5)
 )
 ax_ATPase_range.width = 120
 
 # Plot [ATP] maintenance with HK and PFK rate sub'd to ATPase rate
 ax_ATPase_range = Axis(
     fig[2, 5:6],
-    limits = ((0.001, 1.0), (-0.2e-3, 1.75 * adenine_pool_size)),
-    xlabel = "ATPase, % of pathway Vmax",
-    ylabel = "[ATP],mM",
-    title = "Maintaining ATP concentration\nwith 0.5V(HK1)=0.5V(PFKP)=V(ATPase)",
-    xscale = log10,
+    limits=((0.001, 1.0), (-0.2e-3, 1.75 * adenine_pool_size)),
+    xlabel="ATPase, % of pathway Vmax",
+    ylabel="[ATP],mM",
+    title="Maintaining ATP concentration\nwith 0.5V(HK1)=0.5V(PFKP)=V(ATPase)",
+    xscale=log10,
     # yscale = log10,
-    xticks = ([0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 0.9],
+    xticks=([0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 0.9],
         ["0.1%", "0.3%", "1%", "3%", "10%", "30%", "90%"]),
-    ytickformat = ys -> ["$(Int(round(y*1000, sigdigits=2)))" for y in ys]
+    ytickformat=ys -> ["$(Int(round(y*1000, sigdigits=2)))" for y in ys]
 )
 lines!(
     ax_ATPase_range,
     Complete_Model_Simulation_Data.ATPase_Vmax,
     Complete_Model_Simulation_Data.ATP_conc,
-    color = full_color,
-    linestyle = full_linestyle,
-    label = "Full model"
+    color=full_color,
+    linestyle=full_linestyle,
+    label="Full model"
 )
 lines!(
     ax_ATPase_range,
     No_Reg_Model_Simulation_Data.ATPase_Vmax,
     No_Reg_Model_Simulation_Data.ATP_conc,
-    color = no_reg_color,
-    linestyle = no_reg_linestyle,
-    label = "Model w/o allost."
+    color=no_reg_color,
+    linestyle=no_reg_linestyle,
+    label="Model w/o allost."
 )
 lines!(
     ax_ATPase_range,
     Vmax_HK_PFK_eq_ATPase_No_Reg_Model_Simulation_Data.ATPase_Vmax,
     Vmax_HK_PFK_eq_ATPase_No_Reg_Model_Simulation_Data.ATP_conc,
-    color = condition_no_reg_color,
-    linestyle = condition_no_reg_linestyle,
-    label = "Model w/o allost.\n0.5V(HK1)=0.5V(PFKP)=V(ATPase)"
+    color=condition_no_reg_color,
+    linestyle=condition_no_reg_linestyle,
+    label="Model w/o allost.\n0.5V(HK1)=0.5V(PFKP)=V(ATPase)"
 )
 lines!(
     ax_ATPase_range,
@@ -554,42 +656,45 @@ lines!(
     repeat(
         [glycolysis_init_conc.ATP + glycolysis_init_conc.ADP + glycolysis_init_conc.AMP],
         2),
-    color = adenine_pool_color,
-    linestyle = adenine_pool_linestyle
+    color=adenine_pool_color,
+    linestyle=adenine_pool_linestyle
 )
 text!(
     ax_ATPase_range,
     0.0033,
     1.02 * (glycolysis_init_conc.ATP + glycolysis_init_conc.ADP + glycolysis_init_conc.AMP),
-    text = "Adenine pool size",
-    align = (:left, :bottom),
-    color = adenine_pool_color
+    text="Adenine pool size",
+    align=(:left, :bottom),
+    color=adenine_pool_color
 )
 axislegend(
     ax_ATPase_range,
     # position = :lt,
-    position = (0.5, 1.0),
-    rowgap = 1,
-    framevisible = false,
-    padding = (-2, -5, 0, -4),
-    patchsize = (10, 5)
+    position=(0.5, 1.0),
+    rowgap=1,
+    framevisible=false,
+    padding=(-2, -5, 0, -4),
+    patchsize=(10, 5)
 )
 
-colgap!(fig.layout, 0)
+# linkaxes!(ax_allost_on_off, ax_allost_on_off_const_pi)
+colgap!(fig.layout, 5)
 rowgap!(fig.layout, 10)
 
 label_a = fig[1, 1, TopLeft()] = Label(
-    fig, "A", fontsize = 12, halign = :right, padding = (0, 5, 5, 0))
-label_b = fig[1, 4, TopLeft()] = Label(
-    fig, "B", fontsize = 12, halign = :right, padding = (0, 5, 5, 0))
-label_c = fig[2, 1, TopLeft()] = Label(
-    fig, "C", fontsize = 12, halign = :right, padding = (0, 10, 5, 0))
-label_d = fig[2, 3, TopLeft()] = Label(
-    fig, "D", fontsize = 12, halign = :right, padding = (0, 0, 5, 0))
-label_e = fig[2, 5, TopLeft()] = Label(
-    fig, "E", fontsize = 12, halign = :right, padding = (0, 10, 5, 0))
+    fig, "A", fontsize=12, halign=:right, padding=(0, 5, 5, 0))
+label_b = fig[1, 3, TopLeft()] = Label(
+    fig, "B", fontsize=12, halign=:right, padding=(0, 5, 5, 0))
+label_c = fig[1, 5, TopLeft()] = Label(
+    fig, "C", fontsize=12, halign=:right, padding=(0, 10, 5, 0))
+label_d = fig[2, 1, TopLeft()] = Label(
+    fig, "D", fontsize=12, halign=:right, padding=(0, 0, 5, 0))
+label_e = fig[2, 3, TopLeft()] = Label(
+    fig, "E", fontsize=12, halign=:right, padding=(0, 10, 5, 0))
+label_f = fig[2, 5, TopLeft()] = Label(
+    fig, "F", fontsize=12, halign=:right, padding=(0, 10, 5, 0))
 
 fig
 
 # uncomment the line below to save the plot
-save("Results/$(Dates.format(now(),"mmddyy"))_Fig5_mechanism_of_ATP_maintenence_by_allost.png", fig, px_per_unit = 4)
+# save("Results/$(Dates.format(now(),"mmddyy"))_Fig5_mechanism_of_ATP_maintenence_by_allost.png", fig, px_per_unit = 4)
