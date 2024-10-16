@@ -1,5 +1,5 @@
 using Glycolysis
-using DifferentialEquations, ProgressMeter, LabelledArrays
+using OrdinaryDiffEq, DiffEqCallbacks, ProgressMeter, LabelledArrays
 using CairoMakie, Dates, Printf, Statistics, StatsBase
 using DataFrames, CSV
 using FileIO
@@ -235,7 +235,7 @@ no_reg_params.ATPase_Km_ATP = 1e-9
 
 tspan = (0.0, 120.0)
 callback_time1 = 60
-Initial_ATPase_Vmax_frac = 0.20
+Initial_ATPase_Vmax_frac = 0.10
 glycolysis_params_copy.ATPase_Vmax = Initial_ATPase_Vmax_frac * 2 *
                                      glycolysis_params_copy.HK1_Conc *
                                      glycolysis_params_copy.HK1_Vmax
@@ -293,6 +293,7 @@ init_cond_const_pi_prob = ODEProblem(
 init_cond_const_pi_sol = solve(
     init_cond_const_pi_prob, RadauIIA9(), abstol=1e-15, reltol=1e-8, save_everystep=false)
 new_init_const_pi_cond = init_cond_const_pi_sol.u[end]
+tspan = (0.0, 180.0)
 prob_const_pi = ODEProblem(glycolysis_ODEs_fixed_Pi, new_init_const_pi_cond, tspan,
     glycolysis_params_copy, callback=PresetTime_cb1)
 sol_const_pi = solve(
@@ -346,14 +347,14 @@ hidespines!(ax_pi_trap)
 
 # Plot changing in Pi, intermediate before GAPDH and after GAPDH
 
-# Plot metabolite with switch off/on of allostery whout Pi uptake
+# Plot metabolite with switch off/on of allostery without Pi uptake
 ax_allost_on_off = Axis(
     fig[1, 3:4],
-    limits=((0, 120), nothing),
+    limits=((0, maximum(sol.t)), nothing),
     xlabel="Time, min",
     # ylabel = "[Metabolite],M",
     ylabel="[Metabolite], normalized to Time=0",
-    title="Metabolite concentration changes\nin response to removal of HK and PFK allostery",
+    title="[Metabolite] changes in response to removal\nof HK and PFK allostery without Pi uptake",
     yscale=log10    # yticks = ([1e-8, 1e-6, 1e-4, 1e-2], ["0.01µM", "1µM", "0.1mM", "10mM"]),    # yticks = ([0.001, 0.01, 0.1, 1, 10, 100, 1000]),
 )
 allost_on_off_lines = []
@@ -367,6 +368,16 @@ Upper_color = Makie.wong_colors()[1]
 Upper_style = nothing
 Lower_color = Makie.wong_colors()[3]
 Lower_style = nothing
+ATP_color = :Red
+ATP_style = nothing
+ADP_color = Makie.wong_colors()[1]
+ADP_style = nothing
+Phosphate_color = Makie.wong_colors()[3]
+Phosphate_style = nothing
+Upper_color = (:Grey, 0.5)
+Upper_style = nothing
+Lower_color = (:Grey, 0.5)
+Lower_style = :dot
 for metabolite in [
     :G6P, :F6P, :F16BP, :GAP, :DHAP, :BPG, :TwoPG, :ThreePG, :PEP, :ATP, :ADP, :Phosphate]
     if metabolite ∈ [:G6P, :F6P, :F16BP, :GAP, :DHAP]
@@ -382,7 +393,6 @@ for metabolite in [
         color = ADP_color
         linestyle = ADP_style
     elseif metabolite ∈ [:Phosphate]
-        color = Makie.wong_colors()[5]
         color = Phosphate_color
         linestyle = Phosphate_style
     end
@@ -400,59 +410,42 @@ end
 axislegend(
     ax_allost_on_off,
     [
-        allost_on_off_lines[4],
-        allost_on_off_lines[end-3],
         allost_on_off_lines[end-2],
         allost_on_off_lines[end-1],
-        allost_on_off_lines[end]],
-    ["Metabolites\nbefore GAPDH", "Metabolites\nafter GAPDH", "ATP", "ADP", "Phosphate"],
-    position=:lt,
+        allost_on_off_lines[end],
+        allost_on_off_lines[4],
+        allost_on_off_lines[end-3]],
+    ["ATP", "ADP", "Phosphate", "Metabolites\nbefore GAPDH", "Metabolites\nafter GAPDH"],
+    position=:lb,
     # position = (1.075, 1.05),
     rowgap=1,
+    patchlabelgap=2,
     framevisible=false,
     padding=(-2, -5, 0, -4),
-    patchsize=(10, 5)
+    patchsize=(7.5, 5)
 )
 
 # Plot metabolite with switch off/on of allostery with Pi uptake
 ax_allost_on_off_const_pi = Axis(
     fig[1, 5:6],
-    limits=((0, 120), nothing),
+    limits=((0, maximum(sol_const_pi.t)), nothing),
     xlabel="Time, min",
-    # ylabel = "[Metabolite],M",
-    ylabel="[Metabolite], normalized to Time=0",
-    title="Metabolite concentration changes\nin response to removal of HK and PFK allostery",
+    ylabel="[Metabolite],M",
+    title="[Metabolite] changes in response to removal\nof HK and PFK allostery with Pi uptake",
     # yscale=log10    # yticks = ([1e-8, 1e-6, 1e-4, 1e-2], ["0.01µM", "1µM", "0.1mM", "10mM"]),    # yticks = ([0.001, 0.01, 0.1, 1, 10, 100, 1000]),
 )
 allost_on_off_const_pi_lines = []
-ATP_color = :Red
-ATP_style = nothing
-ADP_color = :Red
-ADP_style = :dot
-Phosphate_color = :Red
-Phosphate_style = :dash
-Upper_color = Makie.wong_colors()[1]
-Upper_style = nothing
-Lower_color = Makie.wong_colors()[3]
-Lower_style = nothing
 for metabolite in [
-    :G6P, :F6P, :F16BP, :GAP, :DHAP, :BPG, :TwoPG, :ThreePG, :PEP, :ATP, :ADP, :Phosphate]
-    if metabolite ∈ [:G6P, :F6P, :F16BP, :GAP, :DHAP]
-        color = Upper_color
-        linestyle = Upper_style
-    elseif metabolite ∈ [:BPG, :TwoPG, :ThreePG, :PEP]
-        color = Lower_color
-        linestyle = Lower_style
-    elseif metabolite ∈ [:ATP]
-        color = ATP_color
-        linestyle = ATP_style
-    elseif metabolite ∈ [:ADP]
-        color = ADP_color
-        linestyle = ADP_style
-    elseif metabolite ∈ [:Phosphate]
-        color = Makie.wong_colors()[5]
-        color = Phosphate_color
-        linestyle = Phosphate_style
+    :GAP, :DHAP, :BPG, :TwoPG, :ThreePG, :PEP, :ATP, :ADP, :Phosphate, :F6P, :G6P, :F16BP]
+    if metabolite ∈ [:F16BP]
+        color = Makie.wong_colors()[1]
+        linestyle = nothing
+    elseif metabolite ∈ [:G6P]
+        color = Makie.wong_colors()[2]
+        linestyle = nothing
+    else
+        color = (:Grey, 0.5)
+        linestyle = nothing
     end
     allost_on_off_const_pi_line = lines!(
         ax_allost_on_off_const_pi,
@@ -465,21 +458,35 @@ for metabolite in [
     )
     push!(allost_on_off_const_pi_lines, allost_on_off_const_pi_line)
 end
+lines!(
+    ax_allost_on_off_const_pi,
+    [sol_const_pi.t[1], sol_const_pi.t[end]],
+    repeat([0.2], 2),
+    color=:Grey,
+    linestyle=:dash
+)
+text!(
+    ax_allost_on_off_const_pi,
+    0.03 * sol_const_pi.t[end],
+    1.1 * 0.2,
+    text="Sum of intracellular\nsmall molecules",
+    align=(:left, :bottom),
+    color=adenine_pool_color
+)
 axislegend(
     ax_allost_on_off_const_pi,
     [
-        allost_on_off_const_pi_lines[4],
-        allost_on_off_const_pi_lines[end-3],
-        allost_on_off_const_pi_lines[end-2],
+        allost_on_off_const_pi_lines[end],
         allost_on_off_const_pi_lines[end-1],
-        allost_on_off_const_pi_lines[end]],
-    ["Metabolites\nbefore GAPDH", "Metabolites\nafter GAPDH", "ATP", "ADP", "Phosphate"],
+        allost_on_off_const_pi_lines[1]],
+    ["F16BP", "G6P", "All other metabolites"],
     position=:lt,
     # position = (1.075, 1.05),
     rowgap=1,
+    patchlabelgap=2,
     framevisible=false,
     padding=(-2, -5, 0, -4),
-    patchsize=(10, 5)
+    patchsize=(7.5, 5)
 )
 
 adenine_pool_size = glycolysis_init_conc.ATP + glycolysis_init_conc.ADP + glycolysis_init_conc.AMP
@@ -678,21 +685,21 @@ axislegend(
 )
 
 # linkaxes!(ax_allost_on_off, ax_allost_on_off_const_pi)
-colgap!(fig.layout, 5)
+colgap!(fig.layout, 10)
 rowgap!(fig.layout, 10)
 
 label_a = fig[1, 1, TopLeft()] = Label(
     fig, "A", fontsize=12, halign=:right, padding=(0, 5, 5, 0))
 label_b = fig[1, 3, TopLeft()] = Label(
-    fig, "B", fontsize=12, halign=:right, padding=(0, 5, 5, 0))
+    fig, "B", fontsize=12, halign=:right, padding=(0, 15, 5, 0))
 label_c = fig[1, 5, TopLeft()] = Label(
     fig, "C", fontsize=12, halign=:right, padding=(0, 10, 5, 0))
 label_d = fig[2, 1, TopLeft()] = Label(
-    fig, "D", fontsize=12, halign=:right, padding=(0, 0, 5, 0))
+    fig, "D", fontsize=12, halign=:right, padding=(0, 10, 5, 0))
 label_e = fig[2, 3, TopLeft()] = Label(
-    fig, "E", fontsize=12, halign=:right, padding=(0, 10, 5, 0))
+    fig, "E", fontsize=12, halign=:right, padding=(0, 15, 5, 0))
 label_f = fig[2, 5, TopLeft()] = Label(
-    fig, "F", fontsize=12, halign=:right, padding=(0, 10, 5, 0))
+    fig, "F", fontsize=12, halign=:right, padding=(0, 5, 5, 0))
 
 fig
 
