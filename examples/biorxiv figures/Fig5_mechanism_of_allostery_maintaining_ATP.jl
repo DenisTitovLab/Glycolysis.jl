@@ -123,8 +123,9 @@ function glycolysis_ODEs_Vmax_HK_PFK_eq_ATPase(ds, s, params, t)
         2 * Glycolysis.rate_AK(s, params)
     )
     ds.AMP = Glycolysis.rate_AK(s, params)
-    ds.Phosphate = Glycolysis.rate_ATPase(s, params) -
-                   Glycolysis.rate_GAPDH(s, params)
+    ds.Phosphate =
+        Glycolysis.rate_ATPase(s, params) -
+        Glycolysis.rate_GAPDH(s, params)
     ds.NAD = Glycolysis.rate_LDH(s, params) -
              Glycolysis.rate_GAPDH(s, params)
     ds.NADH = Glycolysis.rate_GAPDH(s, params) -
@@ -268,6 +269,8 @@ sol = solve(
 )
 
 # calculate results with const Pi
+glycolysis_init_conc_copy = deepcopy(glycolysis_init_conc)
+glycolysis_init_conc_copy.Phosphate = 1e-3
 glycolysis_params_copy = deepcopy(glycolysis_params)
 no_reg_params = deepcopy(glycolysis_params)
 no_reg_params.HK1_K_a_G6P_cat = Inf
@@ -289,13 +292,127 @@ end
 PresetTime_cb1 = PresetTimeCallback(callback_time1, affect1!)
 
 init_cond_const_pi_prob = ODEProblem(
-    glycolysis_ODEs_fixed_Pi, glycolysis_init_conc, (0, 1e8), glycolysis_params_copy)
+    glycolysis_ODEs_fixed_Pi, glycolysis_init_conc_copy, (0, 1e8), glycolysis_params_copy)
 init_cond_const_pi_sol = solve(
     init_cond_const_pi_prob, RadauIIA9(), abstol=1e-15, reltol=1e-8, save_everystep=false)
 new_init_const_pi_cond = init_cond_const_pi_sol.u[end]
 tspan = (0.0, 180.0)
 prob_const_pi = ODEProblem(glycolysis_ODEs_fixed_Pi, new_init_const_pi_cond, tspan,
     glycolysis_params_copy, callback=PresetTime_cb1)
+
+# function glycolysis_ODEs_Vmax_HK_PFK_eq_ATPase_fixed_Pi(ds, s, params, t)
+#     # 0.5 * params.ATPase_Vmax * (1 - s.G6P * s.ADP / (params.HK1_Keq * s.Glucose * s.ATP))
+#     # 0.5 * params.ATPase_Vmax * (1 - s.F16BP * s.ADP / (params.PFKP_Keq * s.F6P * s.ATP))
+#     # params.ATPase_Vmax * (1 - s.Phosphate * s.ADP / (params.ATPase_Keq * s.ATP))
+#     # Glycolysis.rate_HK1(s, params)
+#     # Glycolysis.rate_PFKP(s, params)
+#     # Glycolysis.rate_ATPase(s, params)
+#     ds.Glucose_media = 0.0
+#     ds.Glucose = Glycolysis.rate_GLUT(s, params) -
+#                  0.5 * Glycolysis.rate_ATPase(s, params)
+#     ds.G6P = 0.5 * Glycolysis.rate_ATPase(s, params) -
+#              Glycolysis.rate_GPI(s, params)
+#     ds.F6P = (
+#         Glycolysis.rate_GPI(s, params) -
+#         0.5 * Glycolysis.rate_ATPase(s, params)
+#     )
+#     ds.F16BP = (
+#         0.5 * Glycolysis.rate_ATPase(s, params) -
+#         Glycolysis.rate_ALDO(s, params)
+#     )
+#     ds.GAP = (
+#         Glycolysis.rate_ALDO(s, params) + Glycolysis.rate_TPI(s, params) -
+#         Glycolysis.rate_GAPDH(s, params)
+#     )
+#     ds.DHAP = Glycolysis.rate_ALDO(s, params) - Glycolysis.rate_TPI(s, params)
+#     ds.BPG = Glycolysis.rate_GAPDH(s, params) -
+#              Glycolysis.rate_PGK(s, params)
+#     ds.ThreePG = Glycolysis.rate_PGK(s, params) -
+#                  Glycolysis.rate_PGM(s, params)
+#     ds.TwoPG = Glycolysis.rate_PGM(s, params) - Glycolysis.rate_ENO(s, params)
+#     ds.PEP = Glycolysis.rate_ENO(s, params) -
+#              Glycolysis.rate_PKM2(s, params)
+#     ds.Pyruvate = Glycolysis.rate_PKM2(s, params) -
+#                   Glycolysis.rate_LDH(s, params)
+#     ds.Lactate = Glycolysis.rate_LDH(s, params) -
+#                  Glycolysis.rate_MCT(s, params)
+#     ds.Lactate_media = 0.0
+#     ds.ATP = (
+#         -0.5 * Glycolysis.rate_ATPase(s, params) -
+#         0.5 * Glycolysis.rate_ATPase(s, params) +
+#         Glycolysis.rate_PGK(s, params) +
+#         Glycolysis.rate_PKM2(s, params) -
+#         Glycolysis.rate_ATPase(s, params) +
+#         Glycolysis.rate_AK(s, params)
+#     )
+#     ds.ADP = (
+#         0.5 * Glycolysis.rate_ATPase(s, params) +
+#         0.5 * Glycolysis.rate_ATPase(s, params) -
+#         Glycolysis.rate_PGK(s, params) -
+#         Glycolysis.rate_PKM2(s, params) +
+#         Glycolysis.rate_ATPase(s, params) -
+#         2 * Glycolysis.rate_AK(s, params)
+#     )
+#     ds.AMP = Glycolysis.rate_AK(s, params)
+#     # ds.Phosphate =
+#     #     Glycolysis.rate_ATPase(s, params) -
+#     #     Glycolysis.rate_GAPDH(s, params)
+#     ds.Phosphate = 0.0
+#     ds.NAD = Glycolysis.rate_LDH(s, params) -
+#              Glycolysis.rate_GAPDH(s, params)
+#     ds.NADH = Glycolysis.rate_GAPDH(s, params) -
+#               Glycolysis.rate_LDH(s, params)
+#     ds.F26BP = 0.0
+#     ds.Citrate = 0.0
+#     ds.Phenylalanine = 0.0
+# end
+# init_cond_const_pi_prob = ODEProblem(
+#     glycolysis_ODEs_Vmax_HK_PFK_eq_ATPase_fixed_Pi, glycolysis_init_conc_copy, (0, 1e8), glycolysis_params_copy)
+# init_cond_const_pi_sol = solve(
+#     init_cond_const_pi_prob, RadauIIA9(), abstol=1e-15, reltol=1e-8, save_everystep=false)
+# new_init_const_pi_cond = init_cond_const_pi_sol.u[end]
+# tspan = (0.0, 180.0)
+# prob_const_pi = ODEProblem(glycolysis_ODEs_Vmax_HK_PFK_eq_ATPase_fixed_Pi, new_init_const_pi_cond, tspan,
+# glycolysis_params_copy, callback=PresetTime_cb1)
+
+# reg_Keq_params = deepcopy(glycolysis_params)
+# reg_Keq_params.ATPase_Km_ATP = 1e-9
+# reg_Keq_params.HK1_Keq = 0.05
+# reg_Keq_params.PFKP_Keq = 0.05
+# reg_Keq_params.PGK_Keq = 5.0
+# reg_Keq_params.GAPDH_Keq = 0.5
+# reg_Keq_params.ATPase_Vmax = Initial_ATPase_Vmax_frac * 2 *
+#                              glycolysis_params_copy.HK1_Conc *
+#                              glycolysis_params_copy.HK1_Vmax
+# no_reg_Keq_params = deepcopy(glycolysis_params)
+# no_reg_Keq_params.HK1_K_a_G6P_cat = Inf
+# no_reg_Keq_params.HK1_K_i_G6P_reg = Inf
+# no_reg_Keq_params.HK1_K_a_Pi = Inf
+# no_reg_Keq_params.PFKP_L = 0.0
+# no_reg_Keq_params.GAPDH_L = 0.0
+# no_reg_Keq_params.PKM2_L = 0.0
+# no_reg_Keq_params.ATPase_Km_ATP = 1e-9
+# no_reg_Keq_params.HK1_Keq = 0.05
+# no_reg_Keq_params.PFKP_Keq = 0.05
+# no_reg_Keq_params.PGK_Keq = 5.0
+# no_reg_Keq_params.GAPDH_Keq = 0.5
+# no_reg_Keq_params.ATPase_Vmax = Initial_ATPase_Vmax_frac * 2 *
+#                                 glycolysis_params_copy.HK1_Conc *
+#                                 glycolysis_params_copy.HK1_Vmax
+# function affect1!(integrator)
+#     integrator.p .= no_reg_Keq_params
+# end
+# PresetTime_cb1 = PresetTimeCallback(callback_time1, affect1!)
+# init_cond_const_pi_prob = ODEProblem(
+#     glycolysis_ODEs_fixed_Pi, glycolysis_init_conc_copy, (0, 1e8), reg_Keq_params)
+# init_cond_const_pi_sol = solve(
+#     init_cond_const_pi_prob, RadauIIA9(), abstol=1e-15, reltol=1e-8, save_everystep=false)
+# new_init_const_pi_cond = init_cond_const_pi_sol.u[end]
+# tspan = (0.0, 180.0)
+# prob_const_pi = ODEProblem(glycolysis_ODEs_fixed_Pi, new_init_const_pi_cond, tspan,
+#     reg_Keq_params, callback=PresetTime_cb1)
+# ((0.05 / 2700 )^2 * (0.05 /760)^2 * (0.5/16)^2 * (5/2000)^2)^-1
+
 sol_const_pi = solve(
     prob_const_pi,
     RadauIIA9(),
@@ -467,9 +584,9 @@ lines!(
 )
 text!(
     ax_allost_on_off_const_pi,
-    0.03 * sol_const_pi.t[end],
+    0.01 * sol_const_pi.t[end],
     1.1 * 0.2,
-    text="Sum of intracellular\nsmall molecules",
+    text="Estimated level of\nintracellular molecules",
     align=(:left, :bottom),
     color=adenine_pool_color
 )
