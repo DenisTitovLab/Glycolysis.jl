@@ -453,12 +453,16 @@ line_ATPase_color = :grey
 # no_reg_linestyle = [0.5, 1.5, 2.5, 3.5]
 no_allo_line_models_style = [0.5, 1, 1.5, 2] .* 2
 
-pi_trap = load("110623_Glycolysis_schematic_pi_trap.png")
+# pi_trap = load("110623_Glycolysis_schematic_pi_trap.png")
+pi_trap = load("101824_Glycolysis_schematic_Harden_Young.png")
+
+
 
 ax_pi_trap, im = image(fig[1, 1:2], rotr90(pi_trap), axis=(aspect=DataAspect(),))
 # ax_pi_trap.alignmode = Mixed(top=-20, bottom=-20, left=-25, right=-15)
-# ax_pi_trap.width = 80
-ax_pi_trap.tellwidth = false
+# ax_pi_trap.alignmode = Mixed(left=-20)
+ax_pi_trap.width = 250
+# ax_pi_trap.tellwidth = false
 hidedecorations!(ax_pi_trap)
 hidespines!(ax_pi_trap)
 
