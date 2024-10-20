@@ -846,4 +846,4 @@ label_i = fig[3, 5, TopLeft()] = Label(fig, "I", fontsize = 12, halign = :right,
 
 fig
 # uncomment the line below to save the plot
-save("Results/$(Dates.format(now(),"mmddyy"))_Fig2-fig_suppl1_model_behavior_and_validation_w_CI.png", fig, px_per_unit = 4)
+save("Results/$(Dates.format(now(),"mmddyy"))_FigS1_model_behavior_and_validation_w_CI.png", fig, px_per_unit = 4)
