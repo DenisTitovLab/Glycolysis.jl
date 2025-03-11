@@ -6,7 +6,7 @@ using FileIO
 
 ##
 # Precalculate output of complete model and model without regulation
-# This code takes ~3 minutes to run on an 8 core machine
+# This code takes ~20 minutes to run on an 8 core machine
 using Distributed
 addprocs()
 
