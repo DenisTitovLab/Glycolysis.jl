@@ -186,8 +186,8 @@ end
 ax_ATP_AUC_hist = Axis(
     fig[1, 2],
     limits = ((nothing), (0, 0.10)),
-    title = "Variance of mean [ATP] in Fig. 3E\n at a 9x range of model parameters",
-    xlabel = "mean [ATP], normalized to adenine pool size",
+    title = "Variance of [ATP] in Fig. 3E\n at a 9x range of model parameters",
+    xlabel = "[ATP], normalized to adenine pool size",
     ylabel = "Fraction of counts",
     xtickformat = xs -> ["$(round(x,sigdigits=1))" for x in xs],
 )
@@ -242,7 +242,7 @@ barplot_df = combine(
 ax_Sens_Ind = Axis(
     fig[2, 2],
     limits = ((nothing), (0, 0.9)),
-    title = "Sens. indxs for mean [ATP] in Fig. 3E\n at a 9x range of model parameters",
+    title = "Sens. indxs for [ATP] in Fig. 3E\n at a 9x range of model parameters",
     ylabel = "Sensitivity Index Values",
     xticks = (
         1:length(unique(barplot_df.Parameters)),
@@ -286,8 +286,8 @@ axislegend(
 ax_ATP_AUC_hist = Axis(
     fig[1, 3],
     limits = ((nothing), (0, 0.10)),
-    title = "Variance of mean Energy in Fig. 3F\n at a 9x range of model parameters",
-    xlabel = "mean Energy",
+    title = "Variance of Energy in Fig. 3F\n at a 9x range of model parameters",
+    xlabel = "Energy",
     ylabel = "Fraction of counts",
     xtickformat = xs -> ["$(round(x,sigdigits=1))" for x in xs],
 )
@@ -342,7 +342,7 @@ barplot_df = combine(
 ax_Sens_Ind = Axis(
     fig[2, 3],
     limits = ((nothing), (0, 0.9)),
-    title = "Sens. indxs for mean Energy in Fig. 3F\n at a 9x range of model parameters",
+    title = "Sens. indxs for Energy in Fig. 3F\n at a 9x range of model parameters",
     ylabel = "Sensitivity Index Values",
     xticks = (
         1:length(unique(barplot_df.Parameters)),
@@ -385,8 +385,8 @@ axislegend(
 ax_ATP_AUC_hist = Axis(
     fig[1, 1],
     limits = ((nothing), (0, 0.10)),
-    title = "Variance of mean ATP prod/ATPase in Fig. 3D\n at a 9x range of model parameters",
-    xlabel = "mean ATP prod/ATPase",
+    title = "Variance of ATP prod. rate/Vmax ATPase in Fig. 3D\n at a 9x range of model parameters",
+    xlabel = "ATP prod. rate/Vmax ATPase",
     ylabel = "Fraction of counts",
     xtickformat = xs -> ["$(round(x,sigdigits=1))" for x in xs],
 )
@@ -441,7 +441,7 @@ barplot_df = combine(
 ax_Sens_Ind = Axis(
     fig[2, 1],
     limits = ((nothing), (0, 0.9)),
-    title = "Sens. indxs for mean ATP prod/ATPase in Fig. 3D\n at a 9x range of model parameters",
+    title = "Sens. indxs for ATP prod. rate/Vmax ATPase\nin Fig. 3D at a 9x range of model parameters",
     ylabel = "Sensitivity Index Values",
     xticks = (
         1:length(unique(barplot_df.Parameters)),
@@ -487,16 +487,16 @@ label_a =
         Label(fig, "A", fontsize = 12, halign = :right, padding = (0, 15, 5, 0))
 label_b =
     fig[1, 2, TopLeft()] =
-        Label(fig, "B", fontsize = 12, halign = :right, padding = (0, 10, 5, 0))
+        Label(fig, "B", fontsize = 12, halign = :right, padding = (0, 5, 5, 0))
 label_c =
     fig[1, 3, TopLeft()] =
-        Label(fig, "C", fontsize = 12, halign = :right, padding = (0, 10, 5, 0))
+        Label(fig, "C", fontsize = 12, halign = :right, padding = (0, 5, 5, 0))
 label_d =
     fig[2, 1, TopLeft()] =
         Label(fig, "D", fontsize = 12, halign = :right, padding = (0, 15, 5, 0))
 label_e =
     fig[2, 2, TopLeft()] =
-        Label(fig, "E", fontsize = 12, halign = :right, padding = (0, 10, 5, 0))
+        Label(fig, "E", fontsize = 12, halign = :right, padding = (0, 5, 5, 0))
 label_f =
     fig[2, 3, TopLeft()] =
         Label(fig, "F", fontsize = 12, halign = :right, padding = (0, 10, 5, 0))
