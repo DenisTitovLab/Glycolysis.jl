@@ -1060,4 +1060,4 @@ label_g =
 fig
 
 # uncomment the line below to save the plot
-# save("Results/$(Dates.format(now(),"mmddyy"))_Fig2_model_behavior_and_validation_Lact_media_0_w_disequilibrium.png", fig, pt_per_unit = 1)
+# save("Results/$(Dates.format(now(),"mmddyy"))_Fig2_model_behavior_and_validation_Lact_media_0_w_disequilibrium.pdf", fig, pt_per_unit = 1)
