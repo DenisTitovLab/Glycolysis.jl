@@ -1,6 +1,6 @@
 using Glycolysis
 using OrdinaryDiffEq, DiffEqCallbacks, BenchmarkTools
-using CairoMakie, DataFrames, DataFramesMeta, Dates, Printf, CSV, XLSX, Statistics, Measurements
+using CairoMakie, DataFrames, DataFramesMeta, Dates, Printf, CSV, XLSX, Statistics, Measurements, StatsBase
 using SwarmMakie
 
 ##
@@ -597,12 +597,11 @@ axislegend(
 
 #Plot disequilibrium ratios of model vs data
 #Load data
-Model_Result_bootstrap = CSV.read(
+Model_Result_bootstrap_free = CSV.read(
     "Results/092424_Glycolysis_Free_Metabolite_Results_10000_reps_w_ATPase_range_2_20_percent_Lact_media_0_Glucose_media_25.csv",
-    # "Results/092824_Glycolysis_Free_Metabolite_Results_10000_reps_w_ATPase_range_2_20_percent_Lact_media_0_Glucose_media_25_10uMF26BP.csv",
     DataFrame,
 )
-Model_Result_bootstrap_no_allostery = CSV.read(
+Model_Result_bootstrap_no_allostery_free = CSV.read(
     "Results/092424_Glycolysis_Free_Metabolite_Results_10000_reps_w_ATPase_range_2_20_percent_Lact_media_0_Glucose_media_25_no_allostery.csv",
     DataFrame,
 )
@@ -616,7 +615,7 @@ Experimental_Data = DataFrame(
 
 #Process data to extract Q/Keq ratios for each reaction
 Disequilibrium_Ratios = DataFrame()
-for row in eachrow(Model_Result_bootstrap)
+for row in eachrow(Model_Result_bootstrap_free)
     push!(
         Disequilibrium_Ratios,
         merge(
@@ -644,7 +643,7 @@ end
 
 #Process no allostery data to extract Q/Keq ratios for each reaction
 Disequilibrium_Ratios_no_allostery = DataFrame()
-for row in eachrow(Model_Result_bootstrap_no_allostery)
+for row in eachrow(Model_Result_bootstrap_no_allostery_free)
     push!(
         Disequilibrium_Ratios_no_allostery,
         merge(
@@ -684,18 +683,21 @@ function sample_non_missing(df::DataFrame)
 end
 
 Disequilibrium_Ratios_data = DataFrame()
+glycolysis_params_modified_keq = deepcopy(Glycolysis.glycolysis_params)
+glycolysis_params_modified_keq.ALDO_Keq = 1.3e-4
+glycolysis_params_modified_keq.TPI_Keq = 0.11
+glycolysis_params_modified_keq.GAPDH_Keq = 2.0
 n_bootstrap = 1000
 for i = 1:n_bootstrap
     #sample one non missing value from each column of the experimental data
     bootstrap = sample_non_missing(Experimental_Data[:, Between(:Glucose_media, :NADH)])
-    Glycolysis.conc_to_disequilibrium_ratios(bootstrap, Glycolysis.glycolysis_params)
     push!(
         Disequilibrium_Ratios_data,
         convert(
             NamedTuple,
             Glycolysis.conc_to_disequilibrium_ratios(
                 bootstrap,
-                Glycolysis.glycolysis_params,
+                glycolysis_params_modified_keq,
             ),
         ),
     )
