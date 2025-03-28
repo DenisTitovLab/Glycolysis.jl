@@ -654,4 +654,4 @@ label_h = fig[2, 10, TopLeft()] = Label(fig, "H", fontsize=12, halign=:right, pa
 fig
 
 # uncomment the line below to save the plot
-# save("Results/$(Dates.format(now(),"mmddyy"))_Fig7_two_enzyme_model.png", fig, px_per_unit = 4)
+# save("Results/$(Dates.format(now(),"mmddyy"))_Fig7_two_enzyme_model.pdf", fig, pt_per_unit = 1)
