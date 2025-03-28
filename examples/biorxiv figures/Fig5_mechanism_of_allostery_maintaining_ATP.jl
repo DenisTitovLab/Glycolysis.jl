@@ -6,7 +6,7 @@ using FileIO
 
 ##
 # Precalculate output of complete model and model without regulation
-# This code takes ~20 minutes to run on an 8 core machine
+# This code takes ~13 minutes to run on an 8 core machine
 using Distributed
 addprocs()
 
@@ -356,7 +356,7 @@ line_ATPase_color = :grey
 no_allo_line_models_style = [0.5, 1, 1.5, 2] .* 2
 
 # pi_trap = load("110623_Glycolysis_schematic_pi_trap.png")
-pi_trap = load("031025_Glycolysis_schematic_Harden_Young.png")
+pi_trap = load("032825_Glycolysis_schematic_Harden_Young.png")
 
 
 
@@ -727,4 +727,4 @@ label_f = fig[2, 5, TopLeft()] = Label(
 fig
 
 # uncomment the line below to save the plot
-# save("Results/$(Dates.format(now(),"mmddyy"))_Fig5_mechanism_of_ATP_maintenence_by_allost.png", fig, px_per_unit = 4)
+# save("Results/$(Dates.format(now(),"mmddyy"))_Fig5_mechanism_of_ATP_maintenence_by_allost.pdf", fig, pt_per_unit = 1)
